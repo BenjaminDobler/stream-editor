@@ -48,8 +48,8 @@ export class SkipOperator extends Operator {
         emitter.belongsToOperator = this;
         emitter.color = e.color;
         const source = new Subject();
-        emitter.x = this.x + this.width;
-        emitter.y = e.y;
+        emitter.x.update(() => this.x + this.width);
+        emitter.y.update(() => e.y());
         emitter.width = 5;
         this.app.emitters.push(emitter);
         this.inputEmitterObservables[e.id] = {
@@ -81,8 +81,8 @@ export class SkipOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x = this.x + this.width + 5;
-        inp.emitter.y = inp.sourceEmitter.y;
+        inp.emitter.x.update(() => this.x + this.width + 5);
+        inp.emitter.y.update(() => inp.sourceEmitter.y);
       }
     });
   }

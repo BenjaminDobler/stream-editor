@@ -8,6 +8,7 @@ import {
 } from 'rxjs';
 import { Item } from './item';
 import { Operator } from './operators/base.operator';
+import { Signal, signal, WritableSignal } from '@angular/core';
 
 function getRandomColor() {
   var symbols = '0123456789ABCDEF';
@@ -21,8 +22,8 @@ function getRandomColor() {
 export class Emitter {
   public operator?: Operator;
   public belongsToOperator?: Operator;
-  y = 0;
-  x = 0;
+  y: WritableSignal<number> = signal(0);
+  x: WritableSignal<number> = signal(0);
   width = 40;
   destroyed$: Subject<void> = new Subject<void>();
   color = getRandomColor();
@@ -55,7 +56,7 @@ export class Emitter {
   activate(obs?: Observable<any>) {
     if (this.type === 'click') {
       const item = new Item();
-      item.y = this.y + 10;
+      item.y.update(() => this.y() + 10);
       item.colors = [this.color];
       this.onItem(item);
     } else if (this.type === 'interval') {
@@ -67,7 +68,7 @@ export class Emitter {
         .subscribe(() => {
           const item = new Item();
           item.colors = [this.color];
-          item.y = this.y + 10;
+          item.y.update(() => this.y() + 10);
           this.onItem(item);
         });
     } else if (this.type === 'observable') {
@@ -82,8 +83,8 @@ export class Emitter {
         }
 
         const item = new Item();
-        item.y = this.y + 10;
-        item.position = this.x;
+        item.y.update(() => this.y() + 10);
+        item.x.update(() => this.x());
         item.emitterID = this.id;
         item.colors = colors;
         this.onItem(item);

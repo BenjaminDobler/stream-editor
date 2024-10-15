@@ -147,10 +147,10 @@ export class AppComponent {
       this.items.forEach((item) => {
         const counterCollision = this.counters.find(
           (o) =>
-            item.position > o.x &&
-            item.position < o.x + o.width &&
-            item.y >= o.y &&
-            item.y < o.y + o.height,
+            item.x() > o.x &&
+            item.x() < o.x + o.width &&
+            item.y() >= o.y &&
+            item.y() < o.y + o.height,
         );
 
         if (counterCollision) {
@@ -159,16 +159,16 @@ export class AppComponent {
 
         const collision = this.operators.find(
           (o) =>
-            item.position > o.x &&
-            item.position < o.x + o.width &&
-            item.y >= o.y &&
-            item.y < o.y + o.height,
+            item.x() > o.x &&
+            item.x() < o.x + o.width &&
+            item.y() >= o.y &&
+            item.y() < o.y + o.height,
         );
         if (collision) {
           toRemove.push(item);
           collision.impact(item);
         } else {
-          if (item.position > 1200) {
+          if (item.x() > 1200) {
             // dead out of game
             toRemove.push(item);
           }
@@ -183,10 +183,10 @@ export class AppComponent {
       return a.x - b.x;
     });
     this.emitters.forEach((e) => {
-      const emitterY = e.y + 10;
+      const emitterY = e.y() + 10;
       const emitteroperators = this.operators.filter((o) => {
         const isWithin =
-          emitterY >= o.y && emitterY <= o.y + o.height && e.x < o.x;
+          emitterY >= o.y && emitterY <= o.y + o.height && e.x() < o.x;
         return isWithin;
       });
       e.operator = emitteroperators[0]; // sort by x first
@@ -204,8 +204,8 @@ export class AppComponent {
 
       emitters.forEach((e) => {
         {
-          ctx.moveTo(e.x, e.y + 10 + 0.1); // Move the pen to (30, 50)
-          ctx.lineTo(o.x, e.y + 10 + 0.1); // Draw a line to (150, 100)
+          ctx.moveTo(e.x(), e.y() + 10 + 0.1); // Move the pen to (30, 50)
+          ctx.lineTo(o.x, e.y() + 10 + 0.1); // Draw a line to (150, 100)
         }
       });
     });
@@ -223,7 +223,7 @@ export class AppComponent {
     this.emitters
       .filter((e) => !e.belongsToOperator)
       .forEach((emitter, index) => {
-        emitter.y = index * 40;
+        emitter.y.update(() => index * 40);
       });
   }
 
@@ -233,7 +233,7 @@ export class AppComponent {
       (item: Item) => {
         this.id++;
         item.id = this.id;
-        item.position = 10;
+        item.x.update(() => 10);
         item.emitterID = emitter.id;
         this.items.push(item);
       },

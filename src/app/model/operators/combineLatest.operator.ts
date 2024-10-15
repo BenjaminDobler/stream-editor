@@ -29,8 +29,8 @@ export class CombineLatestOperator extends Operator {
       );
       emitter.belongsToOperator = this;
 
-      emitter.x = this.x + this.width + 1;
-      emitter.y = this.y + this.height / 2 - 10;
+      emitter.x.update(() => this.x + this.width + 1);
+      emitter.y.update(() => this.y + this.height / 2 - 10);
       emitter.width = 5;
       this.app.emitters.push(emitter);
       this.combineEmitter = emitter;
@@ -47,8 +47,8 @@ export class CombineLatestOperator extends Operator {
     }
 
     if (this.combineEmitter) {
-      this.combineEmitter.x = this.x + this.width + 5;
-      this.combineEmitter.y = this.y + this.height / 2 - 10;
+      this.combineEmitter.x.update(() => this.x + this.width + 5);
+      this.combineEmitter.y.update(() => this.y + this.height / 2 - 10);
     }
 
     let hasNewEmitters = false;

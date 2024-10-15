@@ -1,6 +1,6 @@
-import { BehaviorSubject, Subject, switchMap, throttleTime } from "rxjs";
-import { Operator } from "./base.operator";
-import { Emitter } from "../emitter";
+import { BehaviorSubject, Subject, switchMap, throttleTime } from 'rxjs';
+import { Operator } from './base.operator';
+import { Emitter } from '../emitter';
 
 export class ThrottleOperator extends Operator {
   override type = 'throttle';
@@ -39,8 +39,8 @@ export class ThrottleOperator extends Operator {
         emitter.belongsToOperator = this;
         emitter.color = e.color;
         const source = new Subject();
-        emitter.x = this.x + this.width;
-        emitter.y = e.y;
+        emitter.x.update(() => this.x + this.width);
+        emitter.y.update(() => e.y());
         emitter.width = 5;
         this.app.emitters.push(emitter);
         this.inputEmitterObservables[e.id] = {
@@ -72,8 +72,8 @@ export class ThrottleOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x = this.x + this.width + 5;
-        inp.emitter.y = inp.sourceEmitter.y;
+        inp.emitter.x.update(() => this.x + this.width + 5);
+        inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });
   }

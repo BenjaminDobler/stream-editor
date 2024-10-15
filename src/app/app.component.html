@@ -19,7 +19,9 @@
   @for (emitter of emitters; track emitter) {
     <div
       (contextmenu)="onEmitterContextMenu($event, emitter)"
-      [style.transform]="'translate(' + emitter.x + 'px,' + emitter.y + 'px)'"
+      [style.transform]="
+        'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'
+      "
       [style.background]="emitter.color"
       [style.width]="emitter.width + 'px'"
       class="emitter"
@@ -38,9 +40,7 @@
     @for (item of items; track item) {
       <div
         style="position: absolute; top: 0; left: 0; will-change: transform"
-        [style.transform]="
-          'translate(' + item.position + 'px,' + item.y + 'px)'
-        "
+        [style.transform]="'translate(' + item.x() + 'px,' + item.y() + 'px)'"
       >
         @for (color of item.colors; track color) {
           @if ($count > 1) {
@@ -56,7 +56,6 @@
         }
       </div>
     }
-    
 
     @for (counter of counters; track counter) {
       <div
