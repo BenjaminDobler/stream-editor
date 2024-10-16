@@ -1,8 +1,16 @@
-import {
-  Subject,
-} from 'rxjs';
+import { combineLatest, Subject } from 'rxjs';
 import { Emitter } from '../emitter';
 import { AppComponent } from '../../app.component';
+import { toObservable } from '@angular/core/rxjs-interop';
+
+import {
+  effect,
+  Injector,
+  runInInjectionContext,
+  signal,
+  WritableSignal,
+} from '@angular/core';
+import { IDGenerator } from '../../it.generator';
 
 export abstract class Operator {
   count = 0;
@@ -14,32 +22,14 @@ export abstract class Operator {
     this._throttleTime = value;
   }
   public type = 'unknown';
-  private _x = 0;
-  public get x() {
-    return this._x;
-  }
-  public set x(value) {
-    this._x = value;
-    this.app.updateOperatorInputs();
-  }
-  private _y = 0;
-  public get y() {
-    return this._y;
-  }
-  public set y(value) {
-    this._y = value;
-    this.app.updateOperatorInputs();
-  }
 
-  width = 100;
-  private _height = 200;
-  public get height() {
-    return this._height;
-  }
-  public set height(value) {
-    this._height = value;
-    this.app.updateOperatorInputs();
-  }
+  public id: number = IDGenerator.getID();
+
+
+  x: WritableSignal<number> = signal(0);
+  y: WritableSignal<number> = signal(0);
+  width: WritableSignal<number> = signal(100);
+  height: WritableSignal<number> = signal(200);
 
   items: Subject<any> = new Subject<any>();
 
@@ -55,8 +45,20 @@ export abstract class Operator {
   constructor(
     protected onItem: any,
     protected app: AppComponent,
-    type: 'combine' | 'throttle' | 'merge' = 'throttle',
+    protected injector: Injector,
   ) {
     this.init();
+
+    // TODO: can we throttle this?
+    runInInjectionContext(this.injector, () => {
+      combineLatest([
+        toObservable(this.x),
+        toObservable(this.y),
+        toObservable(this.width),
+        toObservable(this.height),
+      ]).subscribe((data) => {
+        this.app.updateOperatorInputs();
+      });
+    });
   }
 }

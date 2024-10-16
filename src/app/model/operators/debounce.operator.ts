@@ -37,7 +37,6 @@ export class DebounceOperator extends Operator {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
         hasNewEmitters = true;
         const emitter = new Emitter(
-          this.app.emitterID++,
           this.onItem,
           'observable',
           this.app.emitters.length,
@@ -45,10 +44,10 @@ export class DebounceOperator extends Operator {
         emitter.belongsToOperator = this;
         emitter.color = e.color;
         const source = new Subject();
-        emitter.x.update(() => this.x + this.width);
+        emitter.x.update(() => this.x() + this.width());
         emitter.y.update(() => e.y());
         emitter.width = 5;
-        this.app.emitters.push(emitter);
+        this.app.emitters.update((emitters) => [...emitters, emitter]);
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.throttleTime$.pipe(
@@ -67,7 +66,9 @@ export class DebounceOperator extends Operator {
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters = this.app.emitters.filter((e) => e !== val.emitter);
+      this.app.emitters.update((emitters) =>
+        emitters.filter((e) => e !== val.emitter),
+      );
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });
@@ -78,7 +79,7 @@ export class DebounceOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x + this.width + 5);
+        inp.emitter.x.update(() => this.x() + this.width() + 5);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });

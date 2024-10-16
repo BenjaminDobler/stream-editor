@@ -16,7 +16,7 @@
 <button (click)="addCounter()">Counter</button>
 
 <div style="display: flex; margin-top: 50px">
-  @for (emitter of emitters; track emitter) {
+  @for (emitter of emitters(); track emitter.id) {
     <div
       (contextmenu)="onEmitterContextMenu($event, emitter)"
       [style.transform]="
@@ -37,7 +37,7 @@
   }
 
   <div style="position: relative">
-    @for (item of items; track item) {
+    @for (item of items(); track item.id) {
       <div
         style="position: absolute; top: 0; left: 0; will-change: transform"
         [style.transform]="'translate(' + item.x() + 'px,' + item.y() + 'px)'"
@@ -57,31 +57,33 @@
       </div>
     }
 
-    @for (counter of counters; track counter) {
+    @for (counter of counters; track counter.id) {
       <div
         [draggable]
         [item]="counter"
         class="counter"
-        [style.width]="counter.width + 'px'"
-        [style.height]="counter.height + 'px'"
-        [style.transform]="'translate(' + counter.x + 'px,' + counter.y + 'px)'"
+        [style.width]="counter.width() + 'px'"
+        [style.height]="counter.height() + 'px'"
+        [style.transform]="
+          'translate(' + counter.x() + 'px,' + counter.y() + 'px)'
+        "
       >
-        {{ counter.count }}
-        x: {{ counter.x }} y: {{ counter.y }}
+        {{ counter.count() }}
+        x: {{ counter.x() }} y: {{ counter.y() }}
       </div>
     }
 
-    @for (operator of operators; track operator) {
+    @for (operator of operators; track operator.id) {
       <div
         (click)="selectedOperator = operator"
         (contextmenu)="onObstacleContextMenu($event, operator)"
         [draggable]
         [item]="operator"
         class="obstacle"
-        [style.width]="operator.width + 'px'"
-        [style.height]="operator.height + 'px'"
+        [style.width]="operator.width() + 'px'"
+        [style.height]="operator.height() + 'px'"
         [style.transform]="
-          'translate(' + operator.x + 'px,' + operator.y + 'px)'
+          'translate(' + operator.x() + 'px,' + operator.y() + 'px)'
         "
       >
         {{ operator.type }}

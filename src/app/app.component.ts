@@ -1,4 +1,14 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EnvironmentInjector,
+  Injector,
+  runInInjectionContext,
+  signal,
+  ViewChild,
+  WritableSignal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { Item } from './model/item';
@@ -45,6 +55,7 @@ function FpsCtrl(fps: number, callback: any) {
   imports: [RouterOutlet, FormsModule, DragableDirective, ContextMenuModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
   title = 'line-animation';
@@ -58,13 +69,16 @@ export class AppComponent {
 
   rightClickEmitter?: Emitter;
   rightClickOperator?: Operator;
+
+  constructor(private injector: EnvironmentInjector) {}
+
   emitterContextMenuItems: MenuItem[] = [
     {
       label: 'Delete',
       icon: 'pi pi-trash',
       command: (e) => {
-        this.emitters = this.emitters.filter(
-          (e) => e !== this.rightClickEmitter,
+        this.emitters.update((emitters) =>
+          emitters.filter((e) => e !== this.rightClickEmitter),
         );
         this.rightClickEmitter?.destroy();
         this.updateRootEmitterPosition();
@@ -82,11 +96,14 @@ export class AppComponent {
           (e) => e !== this.rightClickOperator,
         );
 
-        const obstacleEmitters = this.emitters.filter(
+        const obstacleEmitters = this.emitters().filter(
           (e) => e.belongsToOperator === this.rightClickOperator,
         );
-        this.emitters = this.emitters.filter(
-          (e) => e.belongsToOperator !== this.rightClickOperator,
+
+        this.emitters.update((emitters) =>
+          emitters.filter(
+            (e) => e.belongsToOperator !== this.rightClickOperator,
+          ),
         );
         obstacleEmitters.forEach((e) => e.destroy());
         this.updateOperatorInputs();
@@ -99,15 +116,10 @@ export class AppComponent {
 
   selectedOperator?: Operator;
 
-  items: Item[] = [];
-  emitters: Emitter[] = [];
+  items: WritableSignal<Item[]> = signal([]);
+  emitters: WritableSignal<Emitter[]> = signal([]);
 
   operators: Operator[] = [];
-
-  rootEmitterCount = 0;
-
-  id = 0;
-  emitterID = 0;
 
   onEmitterContextMenu(event: any, emitter: Emitter) {
     this.rightClickEmitter = emitter;
@@ -141,16 +153,16 @@ export class AppComponent {
     const fps = FpsCtrl(30, (data: any) => {
       // console.log('update ', this.items);
       //console.log('loop ', data)
-      this.items.forEach((i) => i.update());
+      this.items().forEach((i) => i.update());
 
       const toRemove: any = [];
-      this.items.forEach((item) => {
+      this.items().forEach((item) => {
         const counterCollision = this.counters.find(
           (o) =>
-            item.x() > o.x &&
-            item.x() < o.x + o.width &&
-            item.y() >= o.y &&
-            item.y() < o.y + o.height,
+            item.x() > o.x() &&
+            item.x() < o.x() + o.width() &&
+            item.y() >= o.y() &&
+            item.y() < o.y() + o.height(),
         );
 
         if (counterCollision) {
@@ -159,10 +171,10 @@ export class AppComponent {
 
         const collision = this.operators.find(
           (o) =>
-            item.x() > o.x &&
-            item.x() < o.x + o.width &&
-            item.y() >= o.y &&
-            item.y() < o.y + o.height,
+            item.x() > o.x() &&
+            item.x() < o.x() + o.width() &&
+            item.y() >= o.y() &&
+            item.y() < o.y() + o.height(),
         );
         if (collision) {
           toRemove.push(item);
@@ -174,19 +186,21 @@ export class AppComponent {
           }
         }
       });
-      this.items = this.items.filter((item) => !toRemove.includes(item));
+      this.items.update((items) =>
+        items.filter((item) => !toRemove.includes(item)),
+      );
     });
   }
 
   updateOperatorInputs() {
-    this.operators.sort((a: any, b: any) => {
-      return a.x - b.x;
+    this.operators.sort((a: Operator, b: Operator) => {
+      return a.x() - b.x();
     });
-    this.emitters.forEach((e) => {
+    this.emitters().forEach((e) => {
       const emitterY = e.y() + 10;
       const emitteroperators = this.operators.filter((o) => {
         const isWithin =
-          emitterY >= o.y && emitterY <= o.y + o.height && e.x() < o.x;
+          emitterY >= o.y() && emitterY <= o.y() + o.height() && e.x() < o.x();
         return isWithin;
       });
       e.operator = emitteroperators[0]; // sort by x first
@@ -199,13 +213,13 @@ export class AppComponent {
     ctx.setLineDash([5, 5]);
 
     this.operators.forEach((o) => {
-      const emitters = this.emitters.filter((e) => e.operator === o);
+      const emitters = this.emitters().filter((e) => e.operator === o);
       o.setEmitters(emitters);
 
       emitters.forEach((e) => {
         {
           ctx.moveTo(e.x(), e.y() + 10 + 0.1); // Move the pen to (30, 50)
-          ctx.lineTo(o.x, e.y() + 10 + 0.1); // Draw a line to (150, 100)
+          ctx.lineTo(o.x(), e.y() + 10 + 0.1); // Draw a line to (150, 100)
         }
       });
     });
@@ -213,14 +227,12 @@ export class AppComponent {
   }
 
   addItem() {
-    this.id++;
     const item = new Item();
-    item.id = this.id;
-    this.items.push(item);
+    this.items.update((items) => [...items, item]);
   }
 
   updateRootEmitterPosition() {
-    this.emitters
+    this.emitters()
       .filter((e) => !e.belongsToOperator)
       .forEach((emitter, index) => {
         emitter.y.update(() => index * 40);
@@ -229,19 +241,17 @@ export class AppComponent {
 
   addEmitter(type: 'click' | 'interval') {
     const emitter = new Emitter(
-      this.emitterID++,
       (item: Item) => {
-        this.id++;
-        item.id = this.id;
         item.x.update(() => 10);
         item.emitterID = emitter.id;
-        this.items.push(item);
+        this.items.update((items) => [...items, item]);
       },
       type,
       this.emitters.length,
     );
     emitter.isStartEmitter = true;
-    this.emitters.push(emitter);
+    this.emitters.update((emitters) => [...emitters, emitter]);
+
     this.updateOperatorInputs();
     this.updateRootEmitterPosition();
   }
@@ -252,58 +262,72 @@ export class AppComponent {
 
   addObstacle(type: string) {
     if (type === 'throttle') {
-      const o = new ThrottleOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-      }, this);
-      o.x = 200;
+      const o = new ThrottleOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+        },
+        this,
+        this.injector,
+      );
+      o.x.update(() => 200);
       this.operators.push(o);
     } else if (type === 'debounce') {
-      const debounce = new DebounceOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-      }, this);
-      debounce.x = 200;
+      const debounce = new DebounceOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+        },
+        this,
+        this.injector,
+      );
+      debounce.x.update(() => 200);
       this.operators.push(debounce);
     } else if (type === 'skip') {
-      const skip = new SkipOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-      }, this);
-      skip.x = 200;
+      const skip = new SkipOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+        },
+        this,
+        this.injector,
+      );
+      skip.x.update(() => 200);
       this.operators.push(skip);
     } else if (type === 'combineLatest') {
-      const combineLatest = new CombineLatestOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-        // this.updateObstacleInputs();
-      }, this);
-      combineLatest.x = 400;
-      combineLatest.height = 60;
+      const combineLatest = new CombineLatestOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+          // this.updateObstacleInputs();
+        },
+        this,
+        this.injector,
+      );
+      combineLatest.x.update(() => 400);
+      combineLatest.height.update(() => 60);
       this.operators.push(combineLatest);
     } else if (type === 'merge') {
-      const mergeObstacle = new MergeOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-        // this.updateObstacleInputs();
-      }, this);
-      mergeObstacle.x = 400;
-      mergeObstacle.height = 60;
+      const mergeObstacle = new MergeOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+
+          // this.updateObstacleInputs();
+        },
+        this,
+        this.injector,
+      );
+      mergeObstacle.x.update(() => 400);
+      mergeObstacle.height.update(() => 60);
       this.operators.push(mergeObstacle);
     } else if (type === 'consumer') {
-      const combineLatest = new ConsumerOperator((item: any) => {
-        this.id++;
-        item.id = this.id;
-        this.items.push(item);
-        // this.updateObstacleInputs();
-      }, this);
-      combineLatest.x = 400;
-      combineLatest.height = 60;
+      const combineLatest = new ConsumerOperator(
+        (item: any) => {
+          this.items.update((items) => [...items, item]);
+
+          // this.updateObstacleInputs();
+        },
+        this,
+        this.injector,
+      );
+      combineLatest.x.update(() => 400);
+      combineLatest.height.update(() => 60);
       this.operators.push(combineLatest);
     }
 

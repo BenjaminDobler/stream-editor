@@ -24,33 +24,32 @@ export class MergeOperator extends Operator {
   setEmitters(e: Emitter[]) {
     if (e.length > 0 && !this.combineEmitter) {
       const emitter = new Emitter(
-        this.app.emitterID++,
         this.onItem,
         'observable',
         this.app.emitters.length,
       );
       emitter.belongsToOperator = this;
 
-      emitter.x.update(() => this.x + this.width + 1);
-      emitter.y.update(() => this.y + this.height / 2 - 10);
+      emitter.x.update(() => this.x() + this.width() + 1);
+      emitter.y.update(() => this.y() + this.height() / 2 - 10);
       emitter.width = 5;
-      this.app.emitters.push(emitter);
+      this.app.emitters.update((emitters) => [...emitters, emitter]);
       this.combineEmitter = emitter;
       emitter.activate(this.combineOutput);
       this.app.updateOperatorInputs();
     }
 
     if (e.length === 0 && this.combineEmitter) {
-      this.app.emitters = this.app.emitters.filter(
-        (e) => e !== this.combineEmitter,
+      this.app.emitters.update((emitters) =>
+        emitters.filter((e) => e !== this.combineEmitter),
       );
       this.combineEmitter.destroy();
       this.combineEmitter = undefined;
     }
 
     if (this.combineEmitter) {
-      this.combineEmitter.x.update(() => this.x + this.width + 5);
-      this.combineEmitter.y.update(() => this.y + this.height / 2 - 10);
+      this.combineEmitter.x.update(() => this.x() + this.width() + 5);
+      this.combineEmitter.y.update(() => this.y() + this.height() / 2 - 10);
     }
 
     let hasNewEmitters = false;

@@ -31,7 +31,9 @@ export class ConsumerOperator extends Operator {
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters = this.app.emitters.filter((e) => e !== val.emitter);
+      this.app.emitters.update((emitters) =>
+        emitters.filter((e) => e !== val.emitter),
+      );
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });
@@ -42,7 +44,7 @@ export class ConsumerOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x + this.width + 5);
+        inp.emitter.x.update(() => this.x() + this.width() + 5);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });

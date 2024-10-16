@@ -58,7 +58,7 @@ export class DragableDirective implements AfterViewInit {
       if (rect.height - offsetY < 10) {
         target.style.height = `${rect.height + y}px`;
         if (this.item) {
-          this.item.height = rect.height + y;
+          this.item.height.update(() => rect.height + y);
         }
       } else {
         x = Math.max(0, x);
@@ -67,8 +67,8 @@ export class DragableDirective implements AfterViewInit {
 
         target.style.transform = `translate(${x}px, ${y}px)`;
         if (this.item) {
-          this.item.x = x;
-          this.item.y = y;
+          this.item.x.update(() => x);
+          this.item.y.update(() => y);
         }
       }
       this.dragging.emit({ x });

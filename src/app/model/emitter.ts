@@ -5,10 +5,12 @@ import {
   Subject,
   switchMap,
   takeUntil,
+  tap,
 } from 'rxjs';
 import { Item } from './item';
 import { Operator } from './operators/base.operator';
 import { Signal, signal, WritableSignal } from '@angular/core';
+import { IDGenerator } from '../it.generator';
 
 function getRandomColor() {
   var symbols = '0123456789ABCDEF';
@@ -28,6 +30,8 @@ export class Emitter {
   destroyed$: Subject<void> = new Subject<void>();
   color = getRandomColor();
   isStartEmitter?: boolean;
+  public id: number = IDGenerator.getID();
+
 
   private _property1: any;
   public get property1(): any {
@@ -41,7 +45,6 @@ export class Emitter {
   property1$: BehaviorSubject<any> = new BehaviorSubject<any>(0);
 
   constructor(
-    public id: number,
     private onItem: any,
     public type: 'interval' | 'click' | 'observable',
     public index: number,
