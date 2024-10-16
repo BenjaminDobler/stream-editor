@@ -36,8 +36,6 @@ export class DragableDirective implements AfterViewInit {
 
         return mousemove$.pipe(
           map((mouseMoveEvent) => {
-            console.log('offsetX', mouseDownEvent.offsetX);
-
             return {
               left: mouseMoveEvent.clientX - mouseDownEvent.offsetX,
               top: mouseMoveEvent.clientY - mouseDownEvent.offsetY,
@@ -45,9 +43,9 @@ export class DragableDirective implements AfterViewInit {
               offsetY: mouseDownEvent.offsetY,
             };
           }),
-          takeUntil(mouseup$)
+          takeUntil(mouseup$),
         );
-      })
+      }),
     );
 
     drag$.subscribe(({ left, top, offsetY }) => {
@@ -58,7 +56,6 @@ export class DragableDirective implements AfterViewInit {
       let y = top - parentRect.top;
 
       if (rect.height - offsetY < 10) {
-        console.log('drag heiht ', rect.height + y, y);
         target.style.height = `${rect.height + y}px`;
         if (this.item) {
           this.item.height = rect.height + y;
