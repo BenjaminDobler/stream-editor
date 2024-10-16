@@ -46,8 +46,6 @@ export class Emitter {
     public type: 'interval' | 'click' | 'observable',
     public index: number,
   ) {
-    console.log('COLOR ', this.color);
-
     if (this.type === 'interval') {
       this.property1 = 2000;
     }
