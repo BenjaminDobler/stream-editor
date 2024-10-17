@@ -5,6 +5,7 @@ import {
   EnvironmentInjector,
   inject,
   signal,
+  viewChild,
   ViewChild,
   WritableSignal,
 } from '@angular/core';
@@ -18,6 +19,7 @@ import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
 import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
+import * as PIXI from 'pixi.js';
 
 import {
   EmitterDescription,
@@ -62,6 +64,8 @@ function FpsCtrl(fps: number, callback: any) {
 })
 export class StreamVizComponent {
   @ViewChild('contextMenu') contextMenu?: ContextMenu;
+
+  pixiElement = viewChild<ElementRef>('pixi');
 
   public streamVizService: StreamVizService = inject(StreamVizService);
 
@@ -124,6 +128,9 @@ export class StreamVizComponent {
 
   operators: Operator[] = [];
 
+  itemSpriteMap: Map<any, any> = new Map();
+  app?: PIXI.Application;
+
   onEmitterContextMenu(event: any, emitter: Emitter) {
     this.rightClickEmitter = emitter;
     if (this.contextMenu) {
@@ -144,6 +151,8 @@ export class StreamVizComponent {
   }
 
   ngAfterViewInit(): void {
+    this.initPixi();
+
     if (this.canvas) {
       this.context = this.canvas.nativeElement.getContext(
         '2d',
@@ -152,48 +161,83 @@ export class StreamVizComponent {
       console.log('no canvas');
     }
   }
+
+  async initPixi() {
+    const app = new PIXI.Application();
+    this.app = app;
+    await app.init({ width: 1400, height: 360, background: 0xffffff });
+    // @ts-ignore actually, it waits for Node, but NOT for ICanvas, okay
+    // will be fixed later
+    this.pixiElement()?.nativeElement.appendChild(app.canvas);
+
+    let elapsed = 0.0;
+    app.ticker.add((ticker) => {
+      elapsed += ticker.deltaTime;
+      //sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
+      this.checkCollision();
+    });
+  }
+
   start() {
-    const fps = FpsCtrl(30, (data: any) => {
-      this.items().forEach((i) => i.update());
+    // const fps = FpsCtrl(30, (data: any) => {
+    //   this.checkCollision();
+    // });
+  }
 
-      const toRemove: any = [];
-      this.items().forEach((item) => {
-        const counterCollision = this.counters.find(
-          (o) =>
-            item.x() > o.x() &&
-            item.x() < o.x() + o.width() &&
-            item.y() >= o.y() &&
-            item.y() < o.y() + o.height(),
-        );
+  checkCollision() {
+    this.items().forEach((i) => i.update());
 
-        if (counterCollision) {
-          counterCollision.impact(item);
-        }
+    this.items().forEach((item) => {
+      const sprite = this.itemSpriteMap.get(item);
+      // sprite.x = item.x();
+      // sprite.y = item.y();
+      sprite.position.set(item.x(), item.y());
+    });
 
-        const collision = this.operators.find(
-          (o) =>
-            item.x() > o.x() &&
-            item.x() < o.x() + o.width() &&
-            item.y() >= o.y() &&
-            item.y() < o.y() + o.height(),
-        );
-        if (collision) {
-          toRemove.push(item);
-          collision.impact(item);
-        } else {
-          if (item.x() > 1200) {
-            // dead out of game
-            toRemove.push(item);
-          }
-        }
-      });
-      this.items.update((items) =>
-        items.filter((item) => !toRemove.includes(item)),
+    const toRemove: any = [];
+    this.items().forEach((item) => {
+      const counterCollision = this.counters.find(
+        (o) =>
+          item.x() > o.x() &&
+          item.x() < o.x() + o.width() &&
+          item.y() >= o.y() &&
+          item.y() < o.y() + o.height(),
       );
+
+      if (counterCollision) {
+        counterCollision.impact(item);
+      }
+
+      const collision = this.operators.find(
+        (o) =>
+          item.x() > o.x() &&
+          item.x() < o.x() + o.width() &&
+          item.y() >= o.y() &&
+          item.y() < o.y() + o.height(),
+      );
+      if (collision) {
+        toRemove.push(item);
+        collision.impact(item);
+      } else {
+        if (item.x() > 1200) {
+          // dead out of game
+          toRemove.push(item);
+        }
+      }
+    });
+    this.items.update((items) =>
+      items.filter((item) => !toRemove.includes(item)),
+    );
+
+    toRemove.forEach((item: Item) => {
+      const sprite = this.itemSpriteMap.get(item);
+      this.app?.stage.removeChild(sprite);
     });
   }
 
   updateOperatorInputs() {
+    const startTime = Date.now();
+
     this.operators.sort((a: Operator, b: Operator) => {
       return a.x() - b.x();
     });
@@ -212,7 +256,9 @@ export class StreamVizComponent {
     );
 
     const switchMapOperatorsWithTarget = this.operators.filter(
-      (o) => o.type === 'switchMapTo' && (o as SwitchMapToOperator).switchMapToTarget,
+      (o) =>
+        o.type === 'switchMapTo' &&
+        (o as SwitchMapToOperator).switchMapToTarget,
     );
 
     const ctx = this.context as CanvasRenderingContext2D;
@@ -240,7 +286,6 @@ export class StreamVizComponent {
       ctx.lineTo(destination?.x() || 0, (destination?.y() || 0) + 10 + 0.1); // Draw a line to (150, 100)
     });
 
-
     switchMapOperatorsWithTarget.forEach((o) => {
       const source = o;
       const destination = (o as SwitchMapToOperator).switchMapToTarget;
@@ -248,14 +293,30 @@ export class StreamVizComponent {
       ctx.lineTo(destination?.x() || 0, (destination?.y() || 0) + 10 + 0.1); // Draw a line to (150, 100)
     });
 
-
     ctx.stroke(); // Render the path
-
+    console.log('inputs ', Date.now()-startTime);
     this.getOperatorLines();
   }
 
-  addItem() {
-    const item = new Item();
+  addItem(item: Item) {
+    let sprite = new PIXI.Graphics();
+
+    if (item.colors.length === 1) {
+      sprite.circle(0, 0, 10).fill(item.colors[0]);
+    } else {
+      const partHeight = 20 / item.colors.length;
+      item.colors.forEach((c, index) => {
+        sprite.rect(0, -10 + index * partHeight, 20, partHeight).fill(c);
+      });
+    }
+    sprite.position.set(item.x(), item.y());
+    if (this.app) {
+      this.app.stage.addChild(sprite);
+    }
+    this.itemSpriteMap.set(item, sprite);
+
+    // Add it to the stage to render
+
     this.items.update((items) => [...items, item]);
   }
 
@@ -272,7 +333,7 @@ export class StreamVizComponent {
     emitter.onItem = (item: Item) => {
       item.x.update(() => 10);
       item.emitterID = emitter.id;
-      this.items.update((items) => [...items, item]);
+      this.addItem(item);
     };
     emitter.isStartEmitter = true;
     this.emitters.update((emitters) => [...emitters, emitter]);
@@ -300,12 +361,13 @@ export class StreamVizComponent {
   addEmitter(emitter: Emitter) {
     emitter.onItem = (item: Item) => {
       item.emitterID = emitter.id;
-      this.items.update((items) => [...items, item]);
+      this.addItem(item);
     };
     this.emitters.update((emitters) => [...emitters, emitter]);
   }
 
   getOperatorLines() {
+    const startTime = Date.now();
     const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
 
     startEmitters.forEach((emitterToCheck) => {
@@ -356,5 +418,7 @@ export class StreamVizComponent {
         emittersInLine.forEach((e) => e.hot.update(() => false));
       }
     });
+
+    console.log('took ', Date.now()-startTime);
   }
 }

@@ -1,7 +1,6 @@
 <button (click)="start()">Start</button>
 
 <button (click)="getOperatorLines()">Line</button>
-<button (click)="addItem()">Add Item</button>
 
 @for (operator of streamVizService.operators(); track operator.name) {
   <button (click)="addOperator(operator)">{{ operator.name }}</button>
@@ -26,7 +25,13 @@
 
 <button (click)="addCounter()">Counter</button>
 
-<div #stage style="display: flex; margin-top: 50px">
+<div #stage style="display: flex; margin-top: 50px; position: relative">
+
+  <div style="position: absolute; left: 0; top: 0" #pixi></div>
+  <canvas style="position: absolute; left: 0; top: 0" #canvas width="1400" height="900"></canvas>
+
+  
+  
   @for (emitter of emitters(); track emitter.id) {
     <div
       (contextmenu)="onEmitterContextMenu($event, emitter)"
@@ -49,7 +54,7 @@
   }
 
   <div style="position: relative">
-    @for (item of items(); track item.id) {
+    <!-- @for (item of items(); track item.id) {
       <div
         style="position: absolute; top: 0; left: 0; will-change: transform"
         [style.transform]="'translate(' + item.x() + 'px,' + item.y() + 'px)'"
@@ -67,7 +72,7 @@
           }
         }
       </div>
-    }
+    } -->
 
     @for (counter of counters; track counter.id) {
       <div
@@ -134,6 +139,5 @@
   }
 </div>
 
-<canvas #canvas width="1400" height="900"></canvas>
 
 <p-contextMenu #contextMenu appendTo="body" />
