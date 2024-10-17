@@ -1,18 +1,10 @@
-import {
-  BehaviorSubject,
-  debounceTime,
-  skip,
-  Subject,
-  switchMap,
-  throttleTime,
-} from 'rxjs';
+import { BehaviorSubject, Subject, switchMap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
-import { Emitter } from '../emitter';
+import { Emitter } from '../emitter/emitter';
+import { ObservableEmitter } from '../emitter/observable.emitter';
 
-export class SkipOperator extends Operator {
-  override type = 'skip';
-
-  protected override _throttleTime: number = 2;
+export class ThrottleOperator extends Operator {
+  override type = 'throttle';
   public override get throttleTime() {
     return this._throttleTime;
   }
@@ -21,7 +13,7 @@ export class SkipOperator extends Operator {
     this.throttleTime$.next(value);
   }
 
-  throttleTime$ = new BehaviorSubject<number>(2);
+  throttleTime$ = new BehaviorSubject<number>(2000);
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -39,22 +31,19 @@ export class SkipOperator extends Operator {
     e.forEach((e) => {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
         hasNewEmitters = true;
-        const emitter = new Emitter(
-          this.onItem,
-          'observable',
-          this.app.emitters.length,
-        );
+        const emitter = new ObservableEmitter();
         emitter.belongsToOperator = this;
         emitter.color = e.color;
+        emitter.previousEmitter = e;
         const source = new Subject();
         emitter.x.update(() => this.x() + this.width());
         emitter.y.update(() => e.y());
         emitter.width = 5;
-        this.app.emitters.update(emitters=> [...emitters, emitter]);
+        this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.throttleTime$.pipe(
-            switchMap((t) => source.asObservable().pipe(skip(t))),
+            switchMap((t) => source.asObservable().pipe(throttleTime(t))),
           ),
           emitter: emitter,
           sourceEmitter: e,

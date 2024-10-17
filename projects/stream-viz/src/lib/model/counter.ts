@@ -10,7 +10,6 @@ export class Counter {
   count = signal(0);
   public id: number = IDGenerator.getID();
 
-
   impactedMap: Map<string, boolean> = new Map<string, boolean>();
 
   impact(item: Item) {

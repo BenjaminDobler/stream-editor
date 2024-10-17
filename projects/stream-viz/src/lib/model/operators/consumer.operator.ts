@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { Emitter } from '../emitter';
+import { Emitter } from '../emitter/emitter';
 import { Operator } from './base.operator';
 
 export class ConsumerOperator extends Operator {

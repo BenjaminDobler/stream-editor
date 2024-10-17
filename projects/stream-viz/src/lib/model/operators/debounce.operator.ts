@@ -1,9 +1,16 @@
-import { BehaviorSubject, Subject, switchMap, throttleTime } from 'rxjs';
+import {
+  BehaviorSubject,
+  debounceTime,
+  Subject,
+  switchMap,
+  throttleTime,
+} from 'rxjs';
+import { Emitter } from '../emitter/emitter';
 import { Operator } from './base.operator';
-import { Emitter } from '../emitter';
+import { ObservableEmitter } from '../emitter/observable.emitter';
 
-export class ThrottleOperator extends Operator {
-  override type = 'throttle';
+export class DebounceOperator extends Operator {
+  override type = 'debounce';
   public override get throttleTime() {
     return this._throttleTime;
   }
@@ -30,22 +37,20 @@ export class ThrottleOperator extends Operator {
     e.forEach((e) => {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
         hasNewEmitters = true;
-        const emitter = new Emitter(
-          this.onItem,
-          'observable',
-          this.app.emitters.length,
-        );
+        const emitter = new ObservableEmitter();
         emitter.belongsToOperator = this;
         emitter.color = e.color;
+        emitter.previousEmitter = e;
+
         const source = new Subject();
         emitter.x.update(() => this.x() + this.width());
         emitter.y.update(() => e.y());
         emitter.width = 5;
-        this.app.emitters.update(emitters=> [...emitters, emitter]);
+        this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.throttleTime$.pipe(
-            switchMap((t) => source.asObservable().pipe(throttleTime(t))),
+            switchMap((t) => source.asObservable().pipe(debounceTime(t))),
           ),
           emitter: emitter,
           sourceEmitter: e,

@@ -18,11 +18,16 @@
     "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
+    "paths": {
+      "stream-viz": [
+        "./projects/stream-viz/src/public-api.ts"
+      ]
+    },
     "module": "ES2022",
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

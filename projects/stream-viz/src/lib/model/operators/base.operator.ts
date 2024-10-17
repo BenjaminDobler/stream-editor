@@ -1,6 +1,5 @@
 import { combineLatest, Subject } from 'rxjs';
-import { Emitter } from '../emitter';
-import { AppComponent } from '../../app.component';
+import { Emitter } from '../emitter/emitter';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 import {
@@ -11,6 +10,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { IDGenerator } from '../../it.generator';
+import { StreamVizComponent } from '../../stream-viz.component';
 
 export abstract class Operator {
   count = 0;
@@ -25,7 +25,6 @@ export abstract class Operator {
 
   public id: number = IDGenerator.getID();
 
-
   x: WritableSignal<number> = signal(0);
   y: WritableSignal<number> = signal(0);
   width: WritableSignal<number> = signal(100);
@@ -39,12 +38,14 @@ export abstract class Operator {
 
   abstract impact(item: any): void;
 
+  public emit$: Subject<any> = new Subject<any>();
+
+
   //input emitters
   abstract setEmitters(e: Emitter[]): void;
 
   constructor(
-    protected onItem: any,
-    protected app: AppComponent,
+    protected app: StreamVizComponent,
     protected injector: Injector,
   ) {
     this.init();

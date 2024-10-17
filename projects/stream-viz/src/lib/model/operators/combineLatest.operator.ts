@@ -1,14 +1,17 @@
-import { combineLatest, merge, Subject, Subscription } from 'rxjs';
+import { combineLatest, Subject, Subscription } from 'rxjs';
+import { Emitter } from '../emitter/emitter';
 import { Operator } from './base.operator';
-import { Emitter } from '../emitter';
+import { ObservableEmitter } from '../emitter/observable.emitter';
 
-export class MergeOperator extends Operator {
+export class CombineLatestOperator extends Operator {
   init() {}
 
-  override type = 'merge';
+  override type = 'combineLatest';
+  combineEmitter?: Emitter;
+  combineSubscription?: Subscription;
+  combineOutput: Subject<any> = new Subject<any>();
 
   impact(item: any) {
-    // this.items.next(item);
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
     } else {
@@ -16,24 +19,16 @@ export class MergeOperator extends Operator {
     }
   }
 
-  combineEmitter?: Emitter;
-  combineSubscription?: Subscription;
-  combineOutput: Subject<any> = new Subject<any>();
-
   //input emitters
   setEmitters(e: Emitter[]) {
     if (e.length > 0 && !this.combineEmitter) {
-      const emitter = new Emitter(
-        this.onItem,
-        'observable',
-        this.app.emitters.length,
-      );
+      const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;
-
+      console.log('update emitter position');
       emitter.x.update(() => this.x() + this.width() + 1);
       emitter.y.update(() => this.y() + this.height() / 2 - 10);
       emitter.width = 5;
-      this.app.emitters.update((emitters) => [...emitters, emitter]);
+      this.app.addEmitter(emitter);
       this.combineEmitter = emitter;
       emitter.activate(this.combineOutput);
       this.app.updateOperatorInputs();
@@ -77,8 +72,7 @@ export class MergeOperator extends Operator {
     if (this.combineSubscription) {
       this.combineSubscription.unsubscribe();
     }
-    this.combineSubscription = merge(...sources).subscribe((data) => {
-      console.log('merge fire');
+    this.combineSubscription = combineLatest(sources).subscribe((data) => {
       this.combineOutput.next(data);
     });
 

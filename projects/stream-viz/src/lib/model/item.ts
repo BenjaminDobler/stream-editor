@@ -6,10 +6,12 @@ export class Item {
   y = signal(0);
   id = IDGenerator.getID();
 
+  value?: any;
+
   emitterID = 0;
   colors = ['#00ff00'];
 
   update() {
-    this.x.update((value) => value + 4);
+    this.x.update((value) => value + 2);
   }
 }
