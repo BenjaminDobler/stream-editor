@@ -1,0 +1,13 @@
+<div class="container">
+  <div
+    [draggable]
+    [positioning]="'transform'"
+    class="item"
+    (positionUpdated)="item.y = $event.y; item.x = $event.x"
+    (widthUpdated)="item.width=$event"
+    (heightUpdated)="item.height=$event"
+  >
+  {{item.x}}x{{item.y}}<br>
+  {{item.width}}x{{item.height}}
+</div>
+</div>
