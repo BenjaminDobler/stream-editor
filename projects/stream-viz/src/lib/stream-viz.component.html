@@ -1,12 +1,25 @@
-<button (click)="start()">Start</button>
+<div class="sidebar">
+  <!-- <button (click)="start()">Start</button>
 
-<button (click)="getOperatorLines()">Line</button>
+  <button (click)="getOperatorLines()">Line</button> -->
 
-@for (operator of streamVizService.operators(); track operator.name) {
-  <button (click)="addOperator(operator)">{{ operator.name }}</button>
-}
+  <div class="sidebar-section">
+    <div class="sidebar-header">Operators</div>
+    <div class="operator-box">
+      @for (operator of streamVizService.operators(); track operator.name) {
+        <!-- <button (click)="addOperator(operator, $event)">{{ operator.name }}</button> -->
+        <div
+          class="operator"
+          style="width: 90px; height: 30px; position: relative"
+          (mousedown)="addOperator(operator, $event)"
+        >
+          {{ operator.name }}
+        </div>
+      }
+    </div>
+  </div>
 
-<!-- 
+  <!-- 
 <button (click)="addOperator('debounce')">debounceTime</button>
 <button (click)="addOperator('throttle')">throttleTime</button>
 <button (click)="addOperator('combineLatest')">combineLatest</button>
@@ -14,30 +27,38 @@
 <button (click)="addOperator('skip')">skip</button>
 <button (click)="addOperator('consumer')">Consumer</button>
 -->
+  <div class="sidebar-section">
+    <div class="sidebar-header">Emitter</div>
 
-@for (emitter of streamVizService.emitters(); track emitter.name) {
+    <p-dropdown
+      #d
+      [options]="streamVizService.emitters()"
+      optionLabel="name"
+      (onChange)="addEmitterFromDescription($event.value); d.clear()"
+      placeholder="Add an Emitter"
+    />
+  </div>
+  <!-- @for (emitter of streamVizService.emitters(); track emitter.name) {
   <button (click)="addEmitterFromDescription(emitter)">
     Add Emitter {{ emitter.name }}
   </button>
-}
-<!-- <button (click)="addEmitter('click')">Add Click Emitter</button>
+} -->
+  <!-- <button (click)="addEmitter('click')">Add Click Emitter</button>
 <button (click)="addEmitter('interval')">Add Interval Emitter</button> -->
 
-<button (click)="addCounter()">Counter</button>
+  <div>
+    <button (click)="addCounter()">Counter</button>
+  </div>
+</div>
 
-<div #stage style="display: flex; margin-top: 50px; position: relative">
-
+<div #stage style="display: flex; position: relative">
   <div style="position: absolute; left: 0; top: 0" #pixi></div>
   <canvas style="position: absolute; left: 0; top: 0" #canvas width="1400" height="900"></canvas>
 
-  
-  
   @for (emitter of emitters(); track emitter.id) {
     <div
       (contextmenu)="onEmitterContextMenu($event, emitter)"
-      [style.transform]="
-        'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'
-      "
+      [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
       [style.background]="emitter.color"
       [style.width]="emitter.width + 'px'"
       class="emitter"
@@ -45,10 +66,7 @@
     >
       {{ emitter.hot() }}
       @if (emitter.type === "interval") {
-        <input
-          [(ngModel)]="emitter.property1"
-          style="field-sizing: content; background: transparent; border: none"
-        />
+        <input [(ngModel)]="emitter.property1" style="field-sizing: content; background: transparent; border: none" />
       }
     </div>
   }
@@ -77,16 +95,17 @@
     @for (counter of counters; track counter.id) {
       <div
         [draggable]
-        [item]="counter"
+        [positioning]="'none'"
+        (heightUpdated)="counter.setHeight($event)"
+        (widthUpdated)="counter.setWidth($event)"
+        (positionUpdated)="counter.setPos($event)"
         class="counter"
         [style.width]="counter.width() + 'px'"
         [style.height]="counter.height() + 'px'"
-        [style.transform]="
-          'translate(' + counter.x() + 'px,' + counter.y() + 'px)'
-        "
+        [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'"
       >
         {{ counter.count() }}
-        x: {{ counter.x() }} y: {{ counter.y() }}
+        <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
       </div>
     }
 
@@ -95,36 +114,30 @@
         (click)="selectedOperator = operator"
         (contextmenu)="onObstacleContextMenu($event, operator)"
         [draggable]
-        [item]="operator"
-        class="obstacle"
+        [positioning]="'none'"
+        (heightUpdated)="operator.setHeight($event)"
+        (widthUpdated)="operator.setWidth($event)"
+        (positionUpdated)="operator.setPos($event)"
+        class="operator"
         [style.width]="operator.width() + 'px'"
         [style.height]="operator.height() + 'px'"
-        [style.background]="$any(operator).triggered ? '#ff0000' : '#ffffff'"
-        [style.transform]="
-          'translate(' + operator.x() + 'px,' + operator.y() + 'px)'
-        "
+        [style.background]="$any(operator).triggered ? '#ff0000' : 'var(--operator-bg)'"
+        [style.transform]="'translate(' + operator.x() + 'px,' + operator.y() + 'px)'"
       >
-        {{ operator.type }}
-        @if (
-          operator.type === "throttle" ||
-          operator.type === "debounce" ||
-          operator.type === "skip"
-        ) {
-          <br />
-          <input
-            style="field-sizing: content"
-            [(ngModel)]="operator.throttleTime"
-          />
-        }
-        @if (operator.type === "consumer") {
-          {{ operator.count }}
-        }
+        <div>
+          {{ operator.type }}
+          @if (operator.type === "throttle" || operator.type === "debounce" || operator.type === "skip") {
+            <br />
+            <input style="field-sizing: content" [(ngModel)]="operator.throttleTime" />
+          }
+          @if (operator.type === "consumer") {
+            {{ operator.count }}
+          }
 
-        @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
-          <button (click)="$any(operator).selectTarget($event, stage)">
-            T
-          </button>
-        }
+          @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
+            <button (click)="$any(operator).selectTarget($event, stage)">T</button>
+          }
+        </div>
       </div>
     }
   </div>
@@ -132,12 +145,8 @@
 
 <div style="position: absolute; bottom: 0">
   @if (selectedOperator) {
-    <input
-      [(ngModel)]="selectedOperator.height"
-      (ngModelChange)="updateOperatorInputs()"
-    />
+    <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
   }
 </div>
-
 
 <p-contextMenu #contextMenu appendTo="body" />

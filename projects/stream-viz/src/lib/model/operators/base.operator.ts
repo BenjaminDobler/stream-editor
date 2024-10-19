@@ -2,13 +2,7 @@ import { combineLatest, Subject } from 'rxjs';
 import { Emitter } from '../emitter/emitter';
 import { toObservable } from '@angular/core/rxjs-interop';
 
-import {
-  effect,
-  Injector,
-  runInInjectionContext,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { effect, Injector, runInInjectionContext, signal, WritableSignal } from '@angular/core';
 import { IDGenerator } from '../../it.generator';
 import { StreamVizComponent } from '../../stream-viz.component';
 
@@ -30,6 +24,19 @@ export abstract class Operator {
   width: WritableSignal<number> = signal(100);
   height: WritableSignal<number> = signal(200);
 
+  setHeight(value: number) {
+    this.height.update(() => value);
+  }
+
+  setWidth(value: number) {
+    this.width.update(() => value);
+  }
+
+  setPos(data: { x: number; y: number }) {
+    this.x.update(() => data.x);
+    this.y.update(() => data.y);
+  }
+
   items: Subject<any> = new Subject<any>();
 
   inputEmitterObservables: any = {};
@@ -39,7 +46,6 @@ export abstract class Operator {
   abstract impact(item: any): void;
 
   public emit$: Subject<any> = new Subject<any>();
-
 
   //input emitters
   abstract setEmitters(e: Emitter[]): void;

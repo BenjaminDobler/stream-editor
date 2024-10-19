@@ -13,22 +13,20 @@ import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { Item } from './model/item';
 
-import { DragableDirective } from './dragable.directive';
+import { DraggerDirective } from '@richapps/rx-drag';
 import { Counter } from './model/counter';
 import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
 import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
 import * as PIXI from 'pixi.js';
+import { DropdownModule } from 'primeng/dropdown';
 
-import {
-  EmitterDescription,
-  OperatorDescription,
-  StreamVizService,
-} from './services/stream-viz.service';
+import { EmitterDescription, OperatorDescription, StreamVizService } from './services/stream-viz.service';
 import { TakeUntilOperator } from './model/operators/takeuntil.operator';
 import { TakeUntilOperatorTarget } from './model/operators/takeuntil-target.operator';
 import { SwitchMapToOperator } from './model/operators/switchMapTo.operator';
+import { fromEvent, take, takeUntil } from 'rxjs';
 
 function FpsCtrl(fps: number, callback: any) {
   var delay = 1000 / fps, // calc. time per frame
@@ -56,7 +54,7 @@ function FpsCtrl(fps: number, callback: any) {
 @Component({
   selector: 'stream-viz',
   standalone: true,
-  imports: [RouterOutlet, FormsModule, DragableDirective, ContextMenuModule],
+  imports: [RouterOutlet, FormsModule, DraggerDirective, ContextMenuModule, DropdownModule],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',
   styleUrl: './stream-viz.component.scss',
@@ -77,6 +75,8 @@ export class StreamVizComponent {
   rightClickEmitter?: Emitter;
   rightClickOperator?: Operator;
 
+  backgroundColor: string = '#00ff00';
+
   constructor(private injector: EnvironmentInjector) {}
 
   emitterContextMenuItems: MenuItem[] = [
@@ -84,9 +84,7 @@ export class StreamVizComponent {
       label: 'Delete',
       icon: 'pi pi-trash',
       command: (e) => {
-        this.emitters.update((emitters) =>
-          emitters.filter((e) => e !== this.rightClickEmitter),
-        );
+        this.emitters.update((emitters) => emitters.filter((e) => e !== this.rightClickEmitter));
         this.rightClickEmitter?.destroy();
         this.updateRootEmitterPosition();
         this.updateOperatorInputs();
@@ -99,19 +97,11 @@ export class StreamVizComponent {
       label: 'Delete',
       icon: 'pi pi-trash',
       command: (e) => {
-        this.operators = this.operators.filter(
-          (e) => e !== this.rightClickOperator,
-        );
+        this.operators = this.operators.filter((e) => e !== this.rightClickOperator);
 
-        const obstacleEmitters = this.emitters().filter(
-          (e) => e.belongsToOperator === this.rightClickOperator,
-        );
+        const obstacleEmitters = this.emitters().filter((e) => e.belongsToOperator === this.rightClickOperator);
 
-        this.emitters.update((emitters) =>
-          emitters.filter(
-            (e) => e.belongsToOperator !== this.rightClickOperator,
-          ),
-        );
+        this.emitters.update((emitters) => emitters.filter((e) => e.belongsToOperator !== this.rightClickOperator));
         obstacleEmitters.forEach((e) => e.destroy());
         this.updateOperatorInputs();
       },
@@ -151,28 +141,33 @@ export class StreamVizComponent {
   }
 
   ngAfterViewInit(): void {
+    const computedStyles = getComputedStyle(document.body);
+    console.log(computedStyles);
+    this.backgroundColor = computedStyles.getPropertyValue('--background-color');
+
     this.initPixi();
 
     if (this.canvas) {
-      this.context = this.canvas.nativeElement.getContext(
-        '2d',
-      ) as CanvasRenderingContext2D;
+      this.context = this.canvas.nativeElement.getContext('2d') as CanvasRenderingContext2D;
     } else {
       console.log('no canvas');
     }
   }
 
+  onEmitterSelected(e: any) {
+    console.log(e);
+  }
+
   async initPixi() {
     const app = new PIXI.Application();
     this.app = app;
-    await app.init({ width: 1400, height: 360, background: 0xffffff });
-    // @ts-ignore actually, it waits for Node, but NOT for ICanvas, okay
-    // will be fixed later
+    console.log('Background color', this.backgroundColor);
+    await app.init({ width: 1400, height: 360, background: this.backgroundColor });
     this.pixiElement()?.nativeElement.appendChild(app.canvas);
 
     let elapsed = 0.0;
     app.ticker.add((ticker) => {
-      elapsed += ticker.deltaTime;
+      // elapsed += ticker.deltaTime;
       //sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
       this.checkCollision();
     });
@@ -197,11 +192,7 @@ export class StreamVizComponent {
     const toRemove: any = [];
     this.items().forEach((item) => {
       const counterCollision = this.counters.find(
-        (o) =>
-          item.x() > o.x() &&
-          item.x() < o.x() + o.width() &&
-          item.y() >= o.y() &&
-          item.y() < o.y() + o.height(),
+        (o) => item.x() > o.x() && item.x() < o.x() + o.width() && item.y() >= o.y() && item.y() < o.y() + o.height(),
       );
 
       if (counterCollision) {
@@ -209,11 +200,7 @@ export class StreamVizComponent {
       }
 
       const collision = this.operators.find(
-        (o) =>
-          item.x() > o.x() &&
-          item.x() < o.x() + o.width() &&
-          item.y() >= o.y() &&
-          item.y() < o.y() + o.height(),
+        (o) => item.x() > o.x() && item.x() < o.x() + o.width() && item.y() >= o.y() && item.y() < o.y() + o.height(),
       );
       if (collision) {
         toRemove.push(item);
@@ -225,9 +212,7 @@ export class StreamVizComponent {
         }
       }
     });
-    this.items.update((items) =>
-      items.filter((item) => !toRemove.includes(item)),
-    );
+    this.items.update((items) => items.filter((item) => !toRemove.includes(item)));
 
     toRemove.forEach((item: Item) => {
       const sprite = this.itemSpriteMap.get(item);
@@ -244,8 +229,7 @@ export class StreamVizComponent {
     this.emitters().forEach((e) => {
       const emitterY = e.y() + 10;
       const emitteroperators = this.operators.filter((o) => {
-        const isWithin =
-          emitterY >= o.y() && emitterY <= o.y() + o.height() && e.x() < o.x();
+        const isWithin = emitterY >= o.y() && emitterY <= o.y() + o.height() && e.x() < o.x();
         return isWithin;
       });
       e.operator = emitteroperators[0]; // sort by x first
@@ -256,15 +240,14 @@ export class StreamVizComponent {
     );
 
     const switchMapOperatorsWithTarget = this.operators.filter(
-      (o) =>
-        o.type === 'switchMapTo' &&
-        (o as SwitchMapToOperator).switchMapToTarget,
+      (o) => o.type === 'switchMapTo' && (o as SwitchMapToOperator).switchMapToTarget,
     );
 
     const ctx = this.context as CanvasRenderingContext2D;
     ctx.canvas.width = ctx.canvas.width;
 
     ctx.beginPath(); // Start a new path
+    ctx.strokeStyle = '#666666';
     ctx.setLineDash([5, 5]);
 
     this.operators.forEach((o) => {
@@ -294,7 +277,7 @@ export class StreamVizComponent {
     });
 
     ctx.stroke(); // Render the path
-    console.log('inputs ', Date.now()-startTime);
+    console.log('inputs ', Date.now() - startTime);
     this.getOperatorLines();
   }
 
@@ -324,7 +307,7 @@ export class StreamVizComponent {
     this.emitters()
       .filter((e) => !e.belongsToOperator)
       .forEach((emitter, index) => {
-        emitter.y.update(() => index * 40);
+        emitter.y.update(() => 50 + index * 40);
       });
   }
 
@@ -346,12 +329,29 @@ export class StreamVizComponent {
     this.counters.push(new Counter());
   }
 
-  addOperator(operatorDescription: OperatorDescription) {
+  addOperator(operatorDescription: OperatorDescription, event?: MouseEvent) {
     const o = new operatorDescription.implementation(this, this.injector);
     o.emit$.subscribe((item: Item) => {
       this.items.update((items) => [...items, item]);
     });
-    o.x.update(() => 200);
+
+    if (event) {
+      console.log('event', event);
+      o.x.update(() => event.clientX);
+      o.y.update(() => event.clientY);
+      o.height.update(() => 50);
+
+      const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove');
+      const mouseup$ = fromEvent<MouseEvent>(document, 'mouseup');
+
+      mousemove$.pipe(takeUntil(mouseup$.pipe(take(1)))).subscribe((me) => {
+        o.x.update(() => me.clientX);
+        o.y.update(() => me.clientY);
+      });
+    } else {
+      o.x.update(() => 200);
+    }
+
     this.operators.push(o);
 
     this.updateOperatorInputs();
@@ -380,15 +380,11 @@ export class StreamVizComponent {
           operators.push(currentEmitter.operator);
         }
         if (currentEmitter) {
-          const operatorEmitters = this.emitters().filter(
-            (e) => e.belongsToOperator === currentEmitter?.operator,
-          );
+          const operatorEmitters = this.emitters().filter((e) => e.belongsToOperator === currentEmitter?.operator);
           if (operatorEmitters.length === 1) {
             currentEmitter = operatorEmitters[0];
           } else {
-            currentEmitter = operatorEmitters.find(
-              (e) => e.previousEmitter === currentEmitter,
-            );
+            currentEmitter = operatorEmitters.find((e) => e.previousEmitter === currentEmitter);
           }
         }
       }
@@ -397,18 +393,14 @@ export class StreamVizComponent {
       if (untilTriggered) {
         console.log('was trigerred!!!!!!!!');
       }
-      let hatUntilTriggerTarget = operators.find(
-        (o: any) => o.type === 'takeuntiltarget',
-      );
+      let hatUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
 
       if (emittersInLine.length === 0) {
         emittersInLine = [emitterToCheck];
       }
       if (
         hatUntilTriggerTarget ||
-        (!untilTriggered &&
-          operators.length > 0 &&
-          operators[operators.length - 1].type === 'consumer')
+        (!untilTriggered && operators.length > 0 && operators[operators.length - 1].type === 'consumer')
       ) {
         emitterToCheck.isHot.update((s) => true);
         emittersInLine.forEach((e) => e.hot.update(() => true));
@@ -419,6 +411,6 @@ export class StreamVizComponent {
       }
     });
 
-    console.log('took ', Date.now()-startTime);
+    console.log('took ', Date.now() - startTime);
   }
 }
