@@ -10,7 +10,7 @@
         <!-- <button (click)="addOperator(operator, $event)">{{ operator.name }}</button> -->
         <div
           class="operator"
-          style="width: 90px; height: 30px; position: relative"
+          style="width: 105px; height: 30px; position: relative"
           (mousedown)="addOperator(operator, $event)"
         >
           {{ operator.name }}
@@ -19,14 +19,6 @@
     </div>
   </div>
 
-  <!-- 
-<button (click)="addOperator('debounce')">debounceTime</button>
-<button (click)="addOperator('throttle')">throttleTime</button>
-<button (click)="addOperator('combineLatest')">combineLatest</button>
-<button (click)="addOperator('merge')">merge</button>
-<button (click)="addOperator('skip')">skip</button>
-<button (click)="addOperator('consumer')">Consumer</button>
--->
   <div class="sidebar-section">
     <div class="sidebar-header">Emitter</div>
 
@@ -38,13 +30,6 @@
       placeholder="Add an Emitter"
     />
   </div>
-  <!-- @for (emitter of streamVizService.emitters(); track emitter.name) {
-  <button (click)="addEmitterFromDescription(emitter)">
-    Add Emitter {{ emitter.name }}
-  </button>
-} -->
-  <!-- <button (click)="addEmitter('click')">Add Click Emitter</button>
-<button (click)="addEmitter('interval')">Add Interval Emitter</button> -->
 
   <div>
     <button (click)="addCounter()">Counter</button>
@@ -53,7 +38,44 @@
 
 <div #stage style="display: flex; position: relative">
   <div style="position: absolute; left: 0; top: 0" #pixi></div>
-  <canvas style="position: absolute; left: 0; top: 0" #canvas width="1400" height="900"></canvas>
+
+  <svg width="1400" height="900" style="position: absolute; left: 0; top: 0">
+    <defs>
+      <!-- A marker to be used as an arrowhead -->
+      <marker
+        id="arrow"
+        viewBox="0 0 20 20"
+        refX="6"
+        refY="6"
+        markerWidth="18"
+        markerHeight="18"
+        stroke="context-stroke"
+        fill="white"
+        orient="auto-start-reverse"
+      >
+        <path d="M 0 0 L 12 6 L 0 12 z" />
+      </marker>
+
+      <marker id="circle" markerWidth="12" markerHeight="12" refX="13" refY="6" markerUnits="strokeWidth">
+        <circle cx="6" cy="6" r="4" stroke="context-stroke" fill="#1E1E1E" />
+      </marker>
+    </defs>
+
+    <!-- A line with a marker -->
+
+    @for (connection of connections(); track connection) {
+      <line
+        [attr.x1]="connection.from.x"
+        [attr.y1]="connection.from.y"
+        [attr.x2]="connection.to.x"
+        [attr.y2]="connection.to.y"
+        stroke="white"
+        stroke-width="1"
+        marker-start="url(#circle)"
+        marker-end="url(#arrow)"
+      />
+    }
+  </svg>
 
   @for (emitter of emitters(); track emitter.id) {
     <div
@@ -64,7 +86,7 @@
       class="emitter"
       (click)="emitter.activate()"
     >
-      {{ emitter.hot() }}
+      <!-- {{ emitter.hot() }} -->
       @if (emitter.type === "interval") {
         <input [(ngModel)]="emitter.property1" style="field-sizing: content; background: transparent; border: none" />
       }
@@ -131,7 +153,7 @@
             <input style="field-sizing: content" [(ngModel)]="operator.throttleTime" />
           }
           @if (operator.type === "consumer") {
-            {{ operator.count }}
+            {{ operator.count() }}
           }
 
           @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {

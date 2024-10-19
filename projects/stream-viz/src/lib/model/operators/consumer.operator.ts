@@ -15,8 +15,7 @@ export class ConsumerOperator extends Operator {
   throttleTime$ = new BehaviorSubject<number>(2000);
 
   impact(item: any) {
-    console.log('on consumer impact');
-    this.count++;
+    this.count.update(x=>x+1);
   }
 
   init() {}

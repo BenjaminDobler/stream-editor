@@ -67,9 +67,6 @@ export class StreamVizComponent {
 
   public streamVizService: StreamVizService = inject(StreamVizService);
 
-  @ViewChild('canvas')
-  canvas?: ElementRef<HTMLCanvasElement>;
-  context?: CanvasRenderingContext2D;
   counters: Counter[] = [];
 
   rightClickEmitter?: Emitter;
@@ -147,11 +144,6 @@ export class StreamVizComponent {
 
     this.initPixi();
 
-    if (this.canvas) {
-      this.context = this.canvas.nativeElement.getContext('2d') as CanvasRenderingContext2D;
-    } else {
-      console.log('no canvas');
-    }
   }
 
   onEmitterSelected(e: any) {
@@ -220,6 +212,8 @@ export class StreamVizComponent {
     });
   }
 
+  connections: WritableSignal<any[]> = signal<any[]>([]);
+
   updateOperatorInputs() {
     const startTime = Date.now();
 
@@ -243,40 +237,49 @@ export class StreamVizComponent {
       (o) => o.type === 'switchMapTo' && (o as SwitchMapToOperator).switchMapToTarget,
     );
 
-    const ctx = this.context as CanvasRenderingContext2D;
-    ctx.canvas.width = ctx.canvas.width;
-
-    ctx.beginPath(); // Start a new path
-    ctx.strokeStyle = '#666666';
-    ctx.setLineDash([5, 5]);
+    const cons: any = [];
 
     this.operators.forEach((o) => {
       const emitters = this.emitters().filter((e) => e.operator === o);
       o.setEmitters(emitters);
 
       emitters.forEach((e) => {
-        {
-          ctx.moveTo(e.x(), e.y() + 10 + 0.1); // Move the pen to (30, 50)
-          ctx.lineTo(o.x(), e.y() + 10 + 0.1); // Draw a line to (150, 100)
-        }
+        cons.push({ from: { x: e.x() + e.width + 15, y: e.y() + 10 }, to: { x: o.x() - 10, y: e.y() + 10 } });
       });
     });
 
     takeUntilOperatorsWithTarget.forEach((o) => {
       const source = o;
       const destination = (o as TakeUntilOperator).takeUntilTarget;
-      ctx.moveTo(source.x(), source.y() + 0.1); // Move the pen to (30, 50)
-      ctx.lineTo(destination?.x() || 0, (destination?.y() || 0) + 10 + 0.1); // Draw a line to (150, 100)
+      cons.push({
+        from: {
+          x: source.x(),
+          y: source.y(),
+        },
+        to: {
+          x: destination?.x(),
+          y: destination?.y(),
+        },
+      });
     });
+
+    this.connections.update(() => cons);
 
     switchMapOperatorsWithTarget.forEach((o) => {
       const source = o;
       const destination = (o as SwitchMapToOperator).switchMapToTarget;
-      ctx.moveTo(source.x(), source.y() + 0.1); // Move the pen to (30, 50)
-      ctx.lineTo(destination?.x() || 0, (destination?.y() || 0) + 10 + 0.1); // Draw a line to (150, 100)
+      cons.push({
+        from: {
+          x: source.x(),
+          y: source.y(),
+        },
+        to: {
+          x: destination?.x(),
+          y: destination?.y(),
+        },
+      });
     });
 
-    ctx.stroke(); // Render the path
     console.log('inputs ', Date.now() - startTime);
     this.getOperatorLines();
   }

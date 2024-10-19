@@ -7,7 +7,7 @@ import { IDGenerator } from '../../it.generator';
 import { StreamVizComponent } from '../../stream-viz.component';
 
 export abstract class Operator {
-  count = 0;
+  count = signal(0);
   protected _throttleTime = 2000;
   public get throttleTime(): number {
     return this._throttleTime;
