@@ -1,12 +1,10 @@
 <div class="sidebar">
-
   <button (click)="getOperatorLines()">Line</button> -->
 
   <div class="sidebar-section">
     <div class="sidebar-header">Operators</div>
     <div class="operator-box">
       @for (operator of streamVizService.operators(); track operator.name) {
-        <!-- <button (click)="addOperator(operator, $event)">{{ operator.name }}</button> -->
         <div
           class="operator"
           style="width: 105px; height: 30px; position: relative"
@@ -20,14 +18,6 @@
 
   <div class="sidebar-section">
     <div class="sidebar-header">Emitter</div>
-
-    <!-- <p-dropdown
-      #d
-      [options]="streamVizService.emitters()"
-      optionLabel="name"
-      (onChange)="addEmitterFromDescription($event.value); d.clear()"
-      placeholder="Add an Emitter"
-    /> -->
 
     @for (emitterDescription of streamVizService.emitters(); track emitterDescription) {
       <div class="emitter-button" (click)="addEmitterFromDescription(emitterDescription)">
@@ -43,16 +33,16 @@
 
   <div>
     <div class="sidebar-header">Taps</div>
-        @for(tap of taps(); track tap.id) {
-            @if(tap.currentItem()) {
-                {{tap.currentItem()?.value}}
-            }
-        }
+    @for (tap of taps(); track tap.id) {
+      @if (tap.currentItem()) {
+        {{ tap.currentItem()?.value }}
+      }
+    }
   </div>
 
   <button (click)="save()">Save</button>
   <button (click)="restore()">Restore</button>
-
+  <button (click)="reset()">Reset</button>
 </div>
 
 <div #stage style="display: flex; position: relative">
@@ -166,7 +156,12 @@
       >
         <div>
           {{ operator.type }}
-          @if (operator.type === "throttle" || operator.type === "debounce" || operator.type === "skip" || operator.type === "take") {
+          @if (
+            operator.type === "throttle" ||
+            operator.type === "debounce" ||
+            operator.type === "skip" ||
+            operator.type === "take"
+          ) {
             <br />
             <input style="field-sizing: content" [(ngModel)]="operator.value1" />
           }

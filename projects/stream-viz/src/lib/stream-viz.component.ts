@@ -190,11 +190,6 @@ export class StreamVizComponent {
   connections: WritableSignal<any[]> = signal<any[]>([]);
 
   updateOperatorInputs() {
-    const startTime = Date.now();
-
-    // this.operators.sort((a: Operator, b: Operator) => {
-    //   return a.x() - b.x();
-    // });
     this.operators.update((x) =>
       x.sort((a: Operator, b: Operator) => {
         return a.x() - b.x();
@@ -268,8 +263,6 @@ export class StreamVizComponent {
         },
       });
     });
-
-    console.log('inputs ', Date.now() - startTime);
   }
 
   addItem(item: Item) {
@@ -306,7 +299,6 @@ export class StreamVizComponent {
     if (!emitterDescription) {
       return;
     }
-    console.log('add emitter ', emitterDescription);
     const emitter: Emitter = emitterDescription.hasOwnProperty('implementation')
       ? new emitterDescription.implementation()
       : emitterDescription.implementationFactory && emitterDescription.implementationFactory();
@@ -338,7 +330,6 @@ export class StreamVizComponent {
     });
 
     if (event) {
-      console.log('event', event);
       o.x.update(() => event.clientX);
       o.y.update(() => event.clientY);
       o.height.update(() => 50);
@@ -393,8 +384,6 @@ export class StreamVizComponent {
         }
       }
 
-      console.log('current emitter Line ', emittersInLine);
-
       let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeUntilTarget');
       if (untilTriggered) {
         console.log('was trigerred!!!!!!!!');
@@ -444,11 +433,21 @@ export class StreamVizComponent {
       };
     });
 
+    const counters = this.counters().map((c) => {
+      return {
+        x: c.x(),
+        y: c.y(),
+        width: c.width(),
+        height: c.height(),
+      };
+    });
+
     localStorage.setItem(
       'stored',
       JSON.stringify({
         operators,
         emitters,
+        counters,
       }),
     );
   }
@@ -475,6 +474,25 @@ export class StreamVizComponent {
           operator.height.update(() => o.height);
         }
       });
+
+      const newCouters = stored.counters.map((co: any) => {
+        const c = new Counter();
+        c.height.update(() => co.height);
+        c.width.update(() => co.width);
+        c.x.update(() => co.x);
+        c.y.update(() => co.y);
+        return c;
+      });
+
+      this.counters.update(() => newCouters);
     }
+    this.updateOperatorInputs();
+  }
+
+  reset() {
+    this.counters.update(() => []);
+    this.emitters.update(() => []);
+    this.operators.update(() => []);
+    this.updateOperatorInputs();
   }
 }
