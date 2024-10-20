@@ -4,11 +4,11 @@ import { Operator } from './base.operator';
 
 export class ConsumerOperator extends Operator {
   override type = 'consumer';
-  public override get throttleTime() {
-    return this._throttleTime;
+  public override get value1() {
+    return this._value1;
   }
-  public override set throttleTime(value) {
-    this._throttleTime = value;
+  public override set value1(value) {
+    this._value1 = value;
     this.throttleTime$.next(value);
   }
 
@@ -21,7 +21,7 @@ export class ConsumerOperator extends Operator {
   init() {}
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
 
     const toRemove = Object.keys(this.inputEmitterObservables).filter(

@@ -22,7 +22,7 @@ export class MergeOperator extends Operator {
   combineOutput: Subject<any> = new Subject<any>();
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     if (e.length > 0 && !this.combineEmitter) {
       const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;

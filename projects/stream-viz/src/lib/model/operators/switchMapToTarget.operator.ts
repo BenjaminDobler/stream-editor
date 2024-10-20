@@ -6,6 +6,9 @@ export class SwitchMapToOperatorTarget extends Operator {
   public override type: string = 'switchMapToTarget';
   public takeUntilSource?: TakeUntilOperator;
 
+    public isActive = false;
+  
+
   override init(): void {
     //throw new Error("Method not implemented.");
   }
@@ -13,7 +16,13 @@ export class SwitchMapToOperatorTarget extends Operator {
     //throw new Error("Method not implemented.");
     this.emit$.next(item);
   }
-  override setEmitters(e: Emitter[]): void {
-    //throw new Error("Method not implemented.");
+  override setInputEmitters(e: Emitter[]): void {
+    console.log("Method not implemented. set Emitters ", e);
+  }
+
+  activateChain() {
+    console.log('activate chain');
+    this.isActive = true;
+    this.app.updateOperatorInputs();
   }
 }

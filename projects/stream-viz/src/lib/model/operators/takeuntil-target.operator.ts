@@ -18,7 +18,7 @@ export class TakeUntilOperatorTarget extends Operator {
         this.emit$.next(item);
 
     }
-    override setEmitters(e: Emitter[]): void {
+    override setInputEmitters(e: Emitter[]): void {
         //throw new Error("Method not implemented.");
     }
 

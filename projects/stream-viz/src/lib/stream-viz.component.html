@@ -1,5 +1,4 @@
 <div class="sidebar">
-  <!-- <button (click)="start()">Start</button>
 
   <button (click)="getOperatorLines()">Line</button> -->
 
@@ -22,18 +21,38 @@
   <div class="sidebar-section">
     <div class="sidebar-header">Emitter</div>
 
-    <p-dropdown
+    <!-- <p-dropdown
       #d
       [options]="streamVizService.emitters()"
       optionLabel="name"
       (onChange)="addEmitterFromDescription($event.value); d.clear()"
       placeholder="Add an Emitter"
-    />
+    /> -->
+
+    @for (emitterDescription of streamVizService.emitters(); track emitterDescription) {
+      <div class="emitter-button" (click)="addEmitterFromDescription(emitterDescription)">
+        {{ emitterDescription.name }}
+      </div>
+    }
   </div>
 
   <div>
     <button (click)="addCounter()">Counter</button>
+    <button (click)="addTap()">Tap</button>
   </div>
+
+  <div>
+    <div class="sidebar-header">Taps</div>
+        @for(tap of taps(); track tap.id) {
+            @if(tap.currentItem()) {
+                {{tap.currentItem()?.value}}
+            }
+        }
+  </div>
+
+  <button (click)="save()">Save</button>
+  <button (click)="restore()">Restore</button>
+
 </div>
 
 <div #stage style="display: flex; position: relative">
@@ -71,6 +90,7 @@
         [attr.y2]="connection.to.y"
         stroke="white"
         stroke-width="1"
+        [attr.stroke-dasharray]="connection.dash"
         marker-start="url(#circle)"
         marker-end="url(#arrow)"
       />
@@ -83,6 +103,7 @@
       [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
       [style.background]="emitter.color"
       [style.width]="emitter.width + 'px'"
+      style="color: #fff"
       class="emitter"
       (click)="emitter.activate()"
     >
@@ -94,27 +115,7 @@
   }
 
   <div style="position: relative">
-    <!-- @for (item of items(); track item.id) {
-      <div
-        style="position: absolute; top: 0; left: 0; will-change: transform"
-        [style.transform]="'translate(' + item.x() + 'px,' + item.y() + 'px)'"
-      >
-        @for (color of item.colors; track color) {
-          @if ($count > 1) {
-            <div
-              [style.background]="color"
-              [style.top]="-10 + ($index * 20) / $count + 'px'"
-              [style.height]="20 / $count + 'px'"
-              class="item"
-            ></div>
-          } @else {
-            <div [style.background]="color" class="item round"></div>
-          }
-        }
-      </div>
-    } -->
-
-    @for (counter of counters; track counter.id) {
+    @for (counter of counters(); track counter.id) {
       <div
         [draggable]
         [positioning]="'none'"
@@ -131,7 +132,24 @@
       </div>
     }
 
-    @for (operator of operators; track operator.id) {
+    @for (tap of taps(); track tap.id) {
+      <div
+        [draggable]
+        [positioning]="'none'"
+        (heightUpdated)="tap.setHeight($event)"
+        (widthUpdated)="tap.setWidth($event)"
+        (positionUpdated)="tap.setPos($event)"
+        class="counter"
+        [style.width]="tap.width() + 'px'"
+        [style.height]="tap.height() + 'px'"
+        [style.transform]="'translate(' + tap.x() + 'px,' + tap.y() + 'px)'"
+      >
+        {{ tap.count() }}
+        <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
+      </div>
+    }
+
+    @for (operator of operators(); track operator.id) {
       <div
         (click)="selectedOperator = operator"
         (contextmenu)="onObstacleContextMenu($event, operator)"
@@ -148,9 +166,9 @@
       >
         <div>
           {{ operator.type }}
-          @if (operator.type === "throttle" || operator.type === "debounce" || operator.type === "skip") {
+          @if (operator.type === "throttle" || operator.type === "debounce" || operator.type === "skip" || operator.type === "take") {
             <br />
-            <input style="field-sizing: content" [(ngModel)]="operator.throttleTime" />
+            <input style="field-sizing: content" [(ngModel)]="operator.value1" />
           }
           @if (operator.type === "consumer") {
             {{ operator.count() }}

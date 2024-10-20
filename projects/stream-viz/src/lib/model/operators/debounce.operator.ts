@@ -11,15 +11,7 @@ import { ObservableEmitter } from '../emitter/observable.emitter';
 
 export class DebounceOperator extends Operator {
   override type = 'debounce';
-  public override get throttleTime() {
-    return this._throttleTime;
-  }
-  public override set throttleTime(value) {
-    this._throttleTime = value;
-    this.throttleTime$.next(value);
-  }
 
-  throttleTime$ = new BehaviorSubject<number>(2000);
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -32,7 +24,7 @@ export class DebounceOperator extends Operator {
   init() {}
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
     e.forEach((e) => {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
@@ -49,7 +41,7 @@ export class DebounceOperator extends Operator {
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
-          observable: this.throttleTime$.pipe(
+          observable: this.value1$.pipe(
             switchMap((t) => source.asObservable().pipe(debounceTime(t))),
           ),
           emitter: emitter,

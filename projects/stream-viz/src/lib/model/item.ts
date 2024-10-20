@@ -4,6 +4,8 @@ import { IDGenerator } from '../it.generator';
 export class Item {
   x = signal(0);
   y = signal(0);
+  width = signal(0);
+  height = signal(0);
   id = IDGenerator.getID();
 
   value?: any;

@@ -17,6 +17,11 @@ export class AppComponent {
   streamViz: StreamVizService = inject(StreamVizService);
 
   constructor() {
-    this.streamViz.addEmitter({ implementation: SpeedEmitter, name: 'Speed' });
+    const speedEmitterFactory = () => {
+      console.log('Build Speed Emitter');
+      return new SpeedEmitter();
+    };
+
+    this.streamViz.addEmitter({ implementationFactory: speedEmitterFactory, name: 'Speed' });
   }
 }

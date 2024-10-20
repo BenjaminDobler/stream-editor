@@ -22,15 +22,17 @@ export class SwitchMapToOperator extends Operator {
     const target: SwitchMapToOperatorTarget = this.app.addOperator({
       implementation: SwitchMapToOperatorTarget,
       name: 'switchMapToTarget',
-    });
+    }) as any;
     this.switchMapToTarget = target;
-    target.takeUntilSource = this;
+    // target.takeUntilSource = this;
+    
 
     target.x.update((x) => event.clientX - stageRect.x);
     target.y.update((y) => event.clientY - stageRect.y);
     target.height.update(() => 20);
 
     target.emit$.subscribe((item) => {
+      console.log('swtichMap target emitted item!');
       this.triggered = true;
       this.app.updateOperatorInputs();
       this.combineOutput.next(item);
@@ -51,11 +53,12 @@ export class SwitchMapToOperator extends Operator {
   impact(item: any) {
     console.log('switch to emitter - reset emitter');
     if (this.switchMapToTarget) {
+      this.switchMapToTarget.activateChain();
     }
   }
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     if (e.length > 0 && !this.combineEmitter) {
       const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;

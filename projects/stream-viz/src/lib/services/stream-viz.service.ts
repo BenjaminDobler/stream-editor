@@ -10,6 +10,8 @@ import { ClickEmitter } from '../model/emitter/click.emitter';
 import { IntervalEmitter } from '../model/emitter/interval.emitter';
 import { TakeUntilOperator } from '../model/operators/takeuntil.operator';
 import { SwitchMapToOperator } from '../model/operators/switchMapTo.operator';
+import { FilterOperator } from 'primeng/api';
+import { TakeOperator } from '../model/operators/take.operator';
 
 export interface OperatorDescription {
   implementation: any;
@@ -17,7 +19,8 @@ export interface OperatorDescription {
 }
 
 export interface EmitterDescription {
-  implementation: any;
+  implementation?: any;
+  implementationFactory?: () => Emitter;
   name: string;
 }
 
@@ -33,6 +36,8 @@ export class StreamVizService {
     { implementation: DebounceOperator, name: 'debounce' },
     { implementation: TakeUntilOperator, name: 'takeUntil' },
     { implementation: SwitchMapToOperator, name: 'switchMapTo' },
+    { implementation: FilterOperator, name: 'filter' },
+    { implementation: TakeOperator, name: 'take' },
     { implementation: ConsumerOperator, name: 'consumer' },
   ]);
 

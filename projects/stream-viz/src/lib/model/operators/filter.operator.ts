@@ -1,10 +1,11 @@
-import { BehaviorSubject, Subject, switchMap, throttleTime } from 'rxjs';
+import { BehaviorSubject, filter, Subject, switchMap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
+import {Item} from '../item';
 
-export class ThrottleOperator extends Operator {
-  override type = 'throttle';
+export class FilterOperator extends Operator {
+  override type = 'filter';
 
 
   impact(item: any) {
@@ -27,7 +28,7 @@ export class ThrottleOperator extends Operator {
         emitter.belongsToOperator = this;
         emitter.color = e.color;
         emitter.previousEmitter = e;
-        const source = new Subject();
+        const source: Subject<Item> = new Subject<Item>();
         emitter.x.update(() => this.x() + this.width());
         emitter.y.update(() => e.y());
         emitter.width = 5;
@@ -35,7 +36,12 @@ export class ThrottleOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
-            switchMap((t) => source.asObservable().pipe(throttleTime(t))),
+            switchMap((t) => source.asObservable().pipe(
+              filter((item: Item)=>{
+                // TODO: implement actual filter function
+                return true;
+              }) 
+            )),
           ),
           emitter: emitter,
           sourceEmitter: e,

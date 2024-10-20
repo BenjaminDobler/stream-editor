@@ -24,6 +24,16 @@
   }
 }
 
+.emitter-button {
+  background: var(--operator-bg);
+  border-radius: 6px;
+  overflow: hidden;
+  //   border: solid 1px #222;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+}
+
 .operator-box {
   display: flex;
   max-width: 220px;
@@ -62,7 +72,6 @@
   z-index: 999;
   width: 20px;
   height: 20px;
-  border: 1px solid #000;
   box-sizing: border-box;
   position: absolute;
 }

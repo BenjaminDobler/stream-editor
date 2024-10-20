@@ -13,16 +13,6 @@ import { ObservableEmitter } from '../emitter/observable.emitter';
 export class SkipOperator extends Operator {
   override type = 'skip';
 
-  protected override _throttleTime: number = 2;
-  public override get throttleTime() {
-    return this._throttleTime;
-  }
-  public override set throttleTime(value) {
-    this._throttleTime = value;
-    this.throttleTime$.next(value);
-  }
-
-  throttleTime$ = new BehaviorSubject<number>(2);
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -35,7 +25,7 @@ export class SkipOperator extends Operator {
   init() {}
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
     e.forEach((e) => {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
@@ -51,7 +41,7 @@ export class SkipOperator extends Operator {
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
-          observable: this.throttleTime$.pipe(
+          observable: this.value1$.pipe(
             switchMap((t) => source.asObservable().pipe(skip(t))),
           ),
           emitter: emitter,

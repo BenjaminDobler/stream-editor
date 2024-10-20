@@ -1,11 +1,11 @@
-import { BehaviorSubject, Subject, switchMap, throttleTime } from 'rxjs';
+import { BehaviorSubject, Subject, switchMap, take, tap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
 
-export class ThrottleOperator extends Operator {
-  override type = 'throttle';
-
+export class TakeOperator extends Operator {
+  protected override _value1: any = 5;
+  override type = 'take';
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -15,7 +15,9 @@ export class ThrottleOperator extends Operator {
     }
   }
 
-  init() {}
+  init() {
+    this.value1 = 5;
+  }
 
   //input emitters
   setInputEmitters(e: Emitter[]) {
@@ -35,7 +37,13 @@ export class ThrottleOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
-            switchMap((t) => source.asObservable().pipe(throttleTime(t))),
+            tap((x) => console.log('TAKE ', x)),
+            switchMap((t) => source.asObservable().pipe(take(t),tap({
+              complete: ()=>{
+                console.log('TAKE COMPLETED');
+                this.completed.update(x=>true);
+              }
+            }))),
           ),
           emitter: emitter,
           sourceEmitter: e,
@@ -44,15 +52,11 @@ export class ThrottleOperator extends Operator {
       }
     });
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter(
-      (k) => !e.find((em) => em.id === +k),
-    );
+    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) =>
-        emitters.filter((e) => e !== val.emitter),
-      );
+      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });

@@ -52,7 +52,7 @@ export class TakeUntilOperator extends Operator {
   }
 
   //input emitters
-  setEmitters(e: Emitter[]) {
+  setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
     e.forEach((e) => {
       if (!this.inputEmitterObservables.hasOwnProperty(e.id)) {
