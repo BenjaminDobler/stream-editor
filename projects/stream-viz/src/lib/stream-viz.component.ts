@@ -130,7 +130,7 @@ export class StreamVizComponent {
   async initPixi() {
     const app = new PIXI.Application();
     this.app = app;
-    await app.init({ width: 1400, height: 360, background: this.backgroundColor });
+    await app.init({ width: 1400, height: 360, background: this.backgroundColor, backgroundAlpha: 0 });
     this.pixiElement()?.nativeElement.appendChild(app.canvas);
 
     let elapsed = 0.0;
@@ -324,7 +324,10 @@ export class StreamVizComponent {
   }
 
   addOperator(operatorDescription: OperatorDescription, event?: MouseEvent) {
+    console.log('add operator ', operatorDescription);
     const o = new operatorDescription.implementation(this, this.injector) as Operator;
+    console.log(o);
+    // TODO: unsubscribe when deleted
     o.emit$.subscribe((item: Item) => {
       this.items.update((items) => [...items, item]);
     });
@@ -430,6 +433,7 @@ export class StreamVizComponent {
         y: o.y(),
         width: o.width(),
         height: o.height(),
+        value1: o.value1
       };
     });
 
@@ -472,6 +476,7 @@ export class StreamVizComponent {
           operator.y.update(() => o.y);
           operator.width.update(() => o.width);
           operator.height.update(() => o.height);
+          operator.value1 = o.value1;
         }
       });
 

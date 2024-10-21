@@ -1,5 +1,5 @@
 <div class="sidebar">
-  <button (click)="getOperatorLines()">Line</button> -->
+  <button (click)="getOperatorLines()">Line</button>
 
   <div class="sidebar-section">
     <div class="sidebar-header">Operators</div>
@@ -46,8 +46,6 @@
 </div>
 
 <div #stage style="display: flex; position: relative">
-  <div style="position: absolute; left: 0; top: 0" #pixi></div>
-
   <svg width="1400" height="900" style="position: absolute; left: 0; top: 0">
     <defs>
       <!-- A marker to be used as an arrowhead -->
@@ -86,6 +84,7 @@
       />
     }
   </svg>
+  <div style="position: absolute; left: 0; top: 0" #pixi></div>
 
   @for (emitter of emitters(); track emitter.id) {
     <div
@@ -180,7 +179,15 @@
 
 <div style="position: absolute; bottom: 0">
   @if (selectedOperator) {
-    <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
+    @if (selectedOperator.type === "throttle") {
+      <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
+    } @else if (selectedOperator && selectedOperator.type === "filter") {
+      <input type="text" [(ngModel)]="selectedOperator.value1" />
+    } @else {
+      <input type="text" [(ngModel)]="selectedOperator.value1" />
+      <input type="text" [(ngModel)]="selectedOperator.count" />
+
+    }
   }
 </div>
 

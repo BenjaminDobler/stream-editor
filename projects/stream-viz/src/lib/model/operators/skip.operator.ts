@@ -1,11 +1,4 @@
-import {
-  BehaviorSubject,
-  debounceTime,
-  skip,
-  Subject,
-  switchMap,
-  throttleTime,
-} from 'rxjs';
+import { BehaviorSubject, debounceTime, skip, Subject, switchMap, tap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
@@ -13,8 +6,8 @@ import { ObservableEmitter } from '../emitter/observable.emitter';
 export class SkipOperator extends Operator {
   override type = 'skip';
 
-
   impact(item: any) {
+    this.count.update((x) => x + 1);
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
     } else {
@@ -42,6 +35,9 @@ export class SkipOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
+            tap(() => {
+              this.count.update((x) => 0);
+            }),
             switchMap((t) => source.asObservable().pipe(skip(t))),
           ),
           emitter: emitter,
@@ -51,15 +47,11 @@ export class SkipOperator extends Operator {
       }
     });
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter(
-      (k) => !e.find((em) => em.id === +k),
-    );
+    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) =>
-        emitters.filter((e) => e !== val.emitter),
-      );
+      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });

@@ -10,8 +10,8 @@ import { ClickEmitter } from '../model/emitter/click.emitter';
 import { IntervalEmitter } from '../model/emitter/interval.emitter';
 import { TakeUntilOperator } from '../model/operators/takeuntil.operator';
 import { SwitchMapToOperator } from '../model/operators/switchMapTo.operator';
-import { FilterOperator } from 'primeng/api';
 import { TakeOperator } from '../model/operators/take.operator';
+import { FilterOperator } from '../model/operators/filter.operator';
 
 export interface OperatorDescription {
   implementation: any;
