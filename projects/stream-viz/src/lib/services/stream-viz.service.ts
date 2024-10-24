@@ -12,6 +12,7 @@ import { TakeUntilOperator } from '../model/operators/takeuntil.operator';
 import { SwitchMapToOperator } from '../model/operators/switchMapTo.operator';
 import { TakeOperator } from '../model/operators/take.operator';
 import { FilterOperator } from '../model/operators/filter.operator';
+import { PairwiseOperator } from '../model/operators/pairwise.operator';
 
 export interface OperatorDescription {
   implementation: any;
@@ -38,6 +39,7 @@ export class StreamVizService {
     { implementation: SwitchMapToOperator, name: 'switchMapTo' },
     { implementation: FilterOperator, name: 'filter' },
     { implementation: TakeOperator, name: 'take' },
+    { implementation: PairwiseOperator, name: 'pairwise' },
     { implementation: ConsumerOperator, name: 'consumer' },
   ]);
 

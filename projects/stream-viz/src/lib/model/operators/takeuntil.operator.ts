@@ -7,7 +7,7 @@ import { ObservableEmitter } from '../emitter/observable.emitter';
 export class TakeUntilOperator extends Operator {
   public override type: string = 'takeuntil';
   public triggered = false;
-  public takeUntilTarget?: TakeUntilOperatorTarget;
+  public targetOperator?: TakeUntilOperatorTarget;
 
   selectTarget(event: PointerEvent, stage: any) {
     const mousedown$ = fromEvent<MouseEvent>(document, 'mousedown');
@@ -18,17 +18,12 @@ export class TakeUntilOperator extends Operator {
       implementation: TakeUntilOperatorTarget,
       name: 'takeUntilTarget',
     });
-    this.takeUntilTarget = target;
-    target.takeUntilSource = this;
+
+    this.addTarget(target);
 
     target.x.update((x) => event.clientX - stageRect.x);
     target.y.update((y) => event.clientY - stageRect.y);
     target.height.update(() => 20);
-
-    target.emit$.subscribe(() => {
-      this.triggered = true;
-      this.app.updateOperatorInputs();
-    });
 
     mousedown$.pipe(take(1)).subscribe((e) => {
       target.x.update((x) => e.clientX - stageRect.x);
@@ -42,6 +37,17 @@ export class TakeUntilOperator extends Operator {
   override init(): void {
     //throw new Error("Method not implemented.");
   }
+
+  addTarget(target: TakeUntilOperatorTarget) {
+    target.emit$.subscribe(() => {
+      console.log('---------- triggered');
+      this.triggered = true;
+      this.app.updateOperatorInputs();
+    });
+    this.targetOperator = target;
+    target.sourceOperator = this;
+  }
+
   impact(item: any) {
     console.log('Impact!');
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -76,15 +82,11 @@ export class TakeUntilOperator extends Operator {
       }
     });
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter(
-      (k) => !e.find((em) => em.id === +k),
-    );
+    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) =>
-        emitters.filter((e) => e !== val.emitter),
-      );
+      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });

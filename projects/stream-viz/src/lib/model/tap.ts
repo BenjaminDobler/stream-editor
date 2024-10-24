@@ -29,6 +29,7 @@ export class Tap {
   impactedMap: Map<string, boolean> = new Map<string, boolean>();
 
   impact(item: Item) {
+    console.log('tap ', item);
     this.currentItem.update((x) => item);
     if (!this.impactedMap.has(item.id + '')) {
       this.impactedMap.set(item.id + '', true);

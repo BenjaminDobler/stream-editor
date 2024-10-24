@@ -8,7 +8,7 @@ import { SwitchMapToOperatorTarget } from './switchMapToTarget.operator';
 export class SwitchMapToOperator extends Operator {
   public override type: string = 'switchMapTo';
   public triggered = false;
-  public switchMapToTarget?: SwitchMapToOperatorTarget;
+  public targetOperator?: SwitchMapToOperatorTarget;
 
   combineEmitter?: Emitter;
   combineSubscription?: Subscription;
@@ -23,20 +23,12 @@ export class SwitchMapToOperator extends Operator {
       implementation: SwitchMapToOperatorTarget,
       name: 'switchMapToTarget',
     }) as any;
-    this.switchMapToTarget = target;
     // target.takeUntilSource = this;
-    
 
+    this.addTarget(target);
     target.x.update((x) => event.clientX - stageRect.x);
     target.y.update((y) => event.clientY - stageRect.y);
     target.height.update(() => 20);
-
-    target.emit$.subscribe((item) => {
-      console.log('swtichMap target emitted item!');
-      this.triggered = true;
-      this.app.updateOperatorInputs();
-      this.combineOutput.next(item);
-    });
 
     mousedown$.pipe(take(1)).subscribe((e) => {
       target.x.update((x) => e.clientX - stageRect.x);
@@ -50,10 +42,22 @@ export class SwitchMapToOperator extends Operator {
   override init(): void {
     //throw new Error("Method not implemented.");
   }
+
+  addTarget(target: SwitchMapToOperatorTarget) {
+    target.emit$.subscribe((item) => {
+      console.log('swtichMap target emitted item!');
+      this.triggered = true;
+      this.app.updateOperatorInputs();
+      this.combineOutput.next(item);
+    });
+    this.targetOperator = target;
+  }
+
   impact(item: any) {
     console.log('switch to emitter - reset emitter');
-    if (this.switchMapToTarget) {
-      this.switchMapToTarget.activateChain();
+    if (this.targetOperator) {
+      this.app.resetLineWithOperator(this.targetOperator);
+      this.targetOperator.activateChain();
     }
   }
 

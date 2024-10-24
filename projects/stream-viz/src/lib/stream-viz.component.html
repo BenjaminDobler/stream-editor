@@ -96,6 +96,9 @@
       class="emitter"
       (click)="emitter.activate()"
     >
+      @if (emitter.isStartEmitter) {
+        {{ emitter.type }}
+      }
       <!-- {{ emitter.hot() }} -->
       @if (emitter.type === "interval") {
         <input [(ngModel)]="emitter.property1" style="field-sizing: content; background: transparent; border: none" />
@@ -146,32 +149,40 @@
         [positioning]="'none'"
         (heightUpdated)="operator.setHeight($event)"
         (widthUpdated)="operator.setWidth($event)"
+        [minHeight]="20"
+        [minWidth]="20"
         (positionUpdated)="operator.setPos($event)"
         class="operator"
+        [class.isTarget]="operator.type === 'takeuntiltarget' || operator.type === 'switchMapToTarget'"
+        [resizable]="operator.type !== 'takeuntiltarget' && operator.type !== 'switchMapToTarget'"
         [style.width]="operator.width() + 'px'"
         [style.height]="operator.height() + 'px'"
         [style.background]="$any(operator).triggered ? '#ff0000' : 'var(--operator-bg)'"
         [style.transform]="'translate(' + operator.x() + 'px,' + operator.y() + 'px)'"
       >
-        <div>
-          {{ operator.type }}
-          @if (
-            operator.type === "throttle" ||
-            operator.type === "debounce" ||
-            operator.type === "skip" ||
-            operator.type === "take"
-          ) {
-            <br />
-            <input style="field-sizing: content" [(ngModel)]="operator.value1" />
-          }
-          @if (operator.type === "consumer") {
-            {{ operator.count() }}
-          }
+        @if (operator.type !== "takeuntiltarget" && operator.type !== "switchMapToTarget") {
+          <div>
+            {{ operator.type }}
+            @if (
+              operator.type === "throttle" ||
+              operator.type === "debounce" ||
+              operator.type === "skip" ||
+              operator.type === "take"
+            ) {
+              <br />
+              <input style="field-sizing: content" [(ngModel)]="operator.value1" />
+            }
+            @if (operator.type === "consumer") {
+              {{ operator.count() }}
+            }
 
-          @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
-            <button (click)="$any(operator).selectTarget($event, stage)">T</button>
-          }
-        </div>
+            @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
+              <button (click)="$any(operator).selectTarget($event, stage)">T</button>
+            }
+          </div>
+        } @else {
+          <img width="16" height="16" src="./assets/target.png" />
+        }
       </div>
     }
   </div>
@@ -186,7 +197,6 @@
     } @else {
       <input type="text" [(ngModel)]="selectedOperator.value1" />
       <input type="text" [(ngModel)]="selectedOperator.count" />
-
     }
   }
 </div>

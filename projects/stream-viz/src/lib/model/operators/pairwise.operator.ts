@@ -1,11 +1,11 @@
-import { BehaviorSubject, filter, map, Subject, switchMap, throttleTime } from 'rxjs';
+import { BehaviorSubject, pairwise, Subject, switchMap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
-import { Item } from '../item';
 
-export class FilterOperator extends Operator {
-  override type = 'filter';
+export class PairwiseOperator extends Operator {
+  override type = 'pairwise';
+
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -17,8 +17,6 @@ export class FilterOperator extends Operator {
 
   init() {}
 
-  filterFunction: any;
-
   //input emitters
   setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
@@ -29,7 +27,7 @@ export class FilterOperator extends Operator {
         emitter.belongsToOperator = this;
         emitter.color = e.color;
         emitter.previousEmitter = e;
-        const source: Subject<Item> = new Subject<Item>();
+        const source = new Subject();
         emitter.x.update(() => this.x() + this.width());
         emitter.y.update(() => e.y());
         emitter.width = 5;
@@ -37,33 +35,7 @@ export class FilterOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
-            map((filterFunctionString) => {
-              let filterFunction: any = () => true;
-              try {
-                var body = 'function( item ){ return ' + filterFunctionString + ' }';
-                var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
-                console.log(body);
-                filterFunction = new Function(wrap(body));
-              } catch (e) {
-                console.log('error creating filter function');
-              }
-              return filterFunction;
-            }),
-            switchMap((t) =>
-              source.asObservable().pipe(
-                filter((item: Item) => {
-                  // TODO: implement actual filter function
-                  console.log('filter item ', t);
-                  let res = true;
-                  try {
-                    res = t.call(null).call(null, item);
-                  } catch (e) {}
-
-                  return res;
-                  // return true;
-                }),
-              ),
-            ),
+            switchMap((t) => source.asObservable().pipe(pairwise())),
           ),
           emitter: emitter,
           sourceEmitter: e,
@@ -72,11 +44,15 @@ export class FilterOperator extends Operator {
       }
     });
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
+    const toRemove = Object.keys(this.inputEmitterObservables).filter(
+      (k) => !e.find((em) => em.id === +k),
+    );
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
+      this.app.emitters.update((emitters) =>
+        emitters.filter((e) => e !== val.emitter),
+      );
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });

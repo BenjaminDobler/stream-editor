@@ -11,6 +11,15 @@ export class DraggerDirective {
   @Input()
   positioning: 'none' | 'absolute' | 'transform' = 'absolute';
 
+  @Input()
+  resizable = true;
+
+  @Input()
+  minWidth = 0;
+
+  @Input()
+  minHeight = 0;
+
   @Output()
   positionUpdated: EventEmitter<{ x: number; y: number }> = new EventEmitter<{ x: number; y: number }>();
 
@@ -20,20 +29,14 @@ export class DraggerDirective {
   @Output()
   heightUpdated: EventEmitter<number> = new EventEmitter<number>();
 
+  public resizeOffset = 10;
+
   ngAfterViewInit() {
     const itemElement = this.el?.nativeElement;
     const parentElement = itemElement.parentElement;
     let parentRect = parentElement.getBoundingClientRect();
     let itemRect = itemElement.getBoundingClientRect();
 
-    // const setX = (x: number) => {
-    //   if (this.positioning === 'absolute') {
-    //     itemElement.style.left = x + 'px';
-    //   } else if (this.positioning === 'transform') {
-    //     itemElement.style.transform;
-    //   }
-    // };
-    // const setY = (y: number) => (itemElement.style.top = y + 'px');
     const setWidth = (width: number) => {
       this.positioning !== 'none' && (itemElement.style.width = width + 'px');
       this.widthUpdated.emit(width);
@@ -61,12 +64,13 @@ export class DraggerDirective {
       parentRect = parentElement.getBoundingClientRect();
     });
     drag.dragMove$.subscribe((move) => {
+      this.resizeOffset = this.resizable ? this.resizeOffset : 0;
       // console.log('drag move ', move);
 
-      const isBottomHeightDrag = move.startOffsetY > itemRect.height - 10;
-      const isLeftWidthDrag = move.startOffsetX < 10;
-      const isRightWidthDrag = move.startOffsetX > itemRect.width - 10;
-      const isTopHeightDrag = move.startOffsetY < 10;
+      const isBottomHeightDrag = move.startOffsetY > itemRect.height - this.resizeOffset;
+      const isLeftWidthDrag = move.startOffsetX < this.resizeOffset;
+      const isRightWidthDrag = move.startOffsetX > itemRect.width - this.resizeOffset;
+      const isTopHeightDrag = move.startOffsetY < this.resizeOffset;
 
       if (!isBottomHeightDrag && !isLeftWidthDrag && !isRightWidthDrag && !isTopHeightDrag) {
         const offsetX = move.originalEvent.x - move.startOffsetX;
@@ -77,25 +81,32 @@ export class DraggerDirective {
 
         pos(x, y);
       } else if (isBottomHeightDrag) {
-        const height = move.originalEvent.y - itemRect.top + itemRect.height - move.startOffsetY;
+        let height = move.originalEvent.y - itemRect.top + itemRect.height - move.startOffsetY;
+        height = Math.max(height, this.minHeight);
         setHeight(height);
       } else if (isRightWidthDrag) {
-        const width = move.originalEvent.x - itemRect.left + itemRect.width - move.startOffsetX;
+        let width = move.originalEvent.x - itemRect.left + itemRect.width - move.startOffsetX;
+        width = Math.max(width, this.minWidth);
+
         setWidth(width);
       } else if (isLeftWidthDrag) {
         const x = move.originalEvent.x - move.startOffsetX - parentRect.left;
         const y = move.originalEvent.y - move.startOffsetY - parentRect.top;
         const width = itemRect.left - parentRect.left + itemRect.width - x;
 
-        pos(x, y);
-        setWidth(width);
+        if (width > this.minWidth) {
+          pos(x, y);
+          setWidth(width);
+        }
       } else if (isTopHeightDrag) {
         const x = move.originalEvent.x - move.startOffsetX - parentRect.left;
 
         const y = move.originalEvent.y - move.startOffsetY - parentRect.top;
         const height = itemRect.top - parentRect.top + itemRect.height - y;
-        pos(x, y);
-        setHeight(height);
+        if (height > this.minHeight) {
+          pos(x, y);
+          setHeight(height);
+        }
       }
     });
 

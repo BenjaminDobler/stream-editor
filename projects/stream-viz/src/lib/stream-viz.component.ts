@@ -68,6 +68,24 @@ export class StreamVizComponent {
         this.updateOperatorInputs();
       },
     },
+    {
+      label: 'Get Line',
+      icon: 'pi pi-trash',
+      command: (e) => {
+        if (this.rightClickEmitter) {
+          this.getLineFromEmitter(this.rightClickEmitter);
+        }
+      },
+    },
+    {
+      label: 'Reset',
+      icon: 'pi pi-trash',
+      command: (e) => {
+        if (this.rightClickEmitter) {
+          this.resetLine(this.rightClickEmitter);
+        }
+      },
+    },
   ];
 
   obstacleContextMenuItems: MenuItem[] = [
@@ -206,11 +224,11 @@ export class StreamVizComponent {
     });
 
     const takeUntilOperatorsWithTarget = this.operators().filter(
-      (o) => o.type === 'takeuntil' && (o as TakeUntilOperator).takeUntilTarget,
+      (o) => o.type === 'takeuntil' && (o as TakeUntilOperator).targetOperator,
     );
 
     const switchMapOperatorsWithTarget = this.operators().filter(
-      (o) => o.type === 'switchMapTo' && (o as SwitchMapToOperator).switchMapToTarget,
+      (o) => o.type === 'switchMapTo' && (o as SwitchMapToOperator).targetOperator,
     );
 
     const cons: any = [];
@@ -234,24 +252,26 @@ export class StreamVizComponent {
 
     takeUntilOperatorsWithTarget.forEach((o) => {
       const source = o;
-      const destination = (o as TakeUntilOperator).takeUntilTarget;
-      cons.push({
-        from: {
-          x: source.x(),
-          y: source.y(),
-        },
-        to: {
-          x: destination?.x(),
-          y: destination?.y(),
-        },
-      });
+      const destination = (o as TakeUntilOperator).targetOperator;
+      if (destination) {
+        cons.push({
+          from: {
+            x: source.x(),
+            y: source.y(),
+          },
+          to: {
+            x: destination?.x() + destination?.width() / 2,
+            y: destination?.y() + destination?.height() / 2,
+          },
+        });
+      }
     });
 
     this.connections.update(() => cons);
 
     switchMapOperatorsWithTarget.forEach((o) => {
       const source = o;
-      const destination = (o as SwitchMapToOperator).switchMapToTarget;
+      const destination = (o as SwitchMapToOperator).targetOperator;
       cons.push({
         from: {
           x: source.x(),
@@ -291,7 +311,7 @@ export class StreamVizComponent {
     this.emitters()
       .filter((e) => !e.belongsToOperator)
       .forEach((emitter, index) => {
-        emitter.y.update(() => 50 + index * 40);
+        emitter.y.update(() => 50 + index * 60);
       });
   }
 
@@ -303,6 +323,7 @@ export class StreamVizComponent {
       ? new emitterDescription.implementation()
       : emitterDescription.implementationFactory && emitterDescription.implementationFactory();
 
+    emitter.type = emitterDescription.name;
     emitter.onItem = (item: Item) => {
       item.x.update(() => 10);
       item.emitterID = emitter.id;
@@ -313,6 +334,7 @@ export class StreamVizComponent {
 
     this.updateOperatorInputs();
     this.updateRootEmitterPosition();
+    return emitter;
   }
 
   addCounter() {
@@ -362,78 +384,110 @@ export class StreamVizComponent {
     this.emitters.update((emitters) => [...emitters, emitter]);
   }
 
+  resetLineWithOperator(operator: Operator) {
+    const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
+    const emitter = startEmitters.find((emitterToCheck) =>
+      this.getLineFromEmitter(emitterToCheck).operators.find((o) => o === operator),
+    );
+    if (emitter) {
+      this.resetLine(emitter);
+    }
+  }
+
+  resetLine(emitterToCheck: Emitter) {
+    let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
+
+    let takeUntilOperators: TakeUntilOperator[] = operators.filter(
+      (o: any) => o.type === 'takeuntil',
+    ) as TakeUntilOperator[];
+    takeUntilOperators.forEach((o) => (o.triggered = false));
+    this.updateOperatorInputs();
+  }
+
+  getLineFromEmitter(emitterToCheck: Emitter) {
+    let emittersInLine = [];
+    let currentEmitter: Emitter | undefined = emitterToCheck;
+    const operators = [];
+    while (currentEmitter && currentEmitter.operator) {
+      emittersInLine.push(currentEmitter);
+      if (currentEmitter.operator) {
+        operators.push(currentEmitter.operator);
+      }
+
+      if (currentEmitter.operator.type === 'takeuntiltarget') {
+        console.log('yes is takeuntil target');
+        const takeUntilOperator = currentEmitter.operator as TakeUntilOperatorTarget;
+        const takeUntilSourceOperator = takeUntilOperator.sourceOperator;
+        currentEmitter = this.emitters().find((e) => e.operator === takeUntilSourceOperator);
+        console.log('current emitter', currentEmitter);
+      } else if (currentEmitter) {
+        const operatorEmitters = this.emitters().filter((e) => e.belongsToOperator === currentEmitter?.operator);
+        if (operatorEmitters.length === 1) {
+          currentEmitter = operatorEmitters[0];
+        } else {
+          currentEmitter = operatorEmitters.find((e) => e.previousEmitter === currentEmitter);
+        }
+      }
+    }
+
+    return {
+      operators,
+      emitters: emittersInLine,
+    };
+  }
+
   getOperatorLines() {
-    const startTime = Date.now();
     const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
 
     this.emitters().forEach((e) => e.hot.update(() => false));
 
     startEmitters.forEach((emitterToCheck) => {
-      let emittersInLine = [];
-      let currentEmitter: Emitter | undefined = emitterToCheck;
-      const operators = [];
-      while (currentEmitter && currentEmitter.operator) {
-        emittersInLine.push(currentEmitter);
-        if (currentEmitter.operator) {
-          operators.push(currentEmitter.operator);
-        }
-        if (currentEmitter) {
-          const operatorEmitters = this.emitters().filter((e) => e.belongsToOperator === currentEmitter?.operator);
-          if (operatorEmitters.length === 1) {
-            currentEmitter = operatorEmitters[0];
-          } else {
-            currentEmitter = operatorEmitters.find((e) => e.previousEmitter === currentEmitter);
-          }
-        }
-      }
-
-      let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeUntilTarget');
+      let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
+      let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeuntil');
       if (untilTriggered) {
         console.log('was trigerred!!!!!!!!');
       }
-      let hasUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
+      // let hasUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
       let hasSwitchMapTarget = operators.find((o: any) => o.type === 'switchMapToTarget') as SwitchMapToOperatorTarget;
 
-      if (emittersInLine.length === 0) {
-        emittersInLine = [emitterToCheck];
+      if (emitters.length === 0) {
+        emitters = [emitterToCheck];
       }
 
       const hasActiveSwitchMapTarget = hasSwitchMapTarget && hasSwitchMapTarget.isActive;
+      // const hasActiveUntilTriggerTarget = hasUntilTriggerTarget && hasUntilTriggerTarget.isActive;
 
-      if (
-        hasUntilTriggerTarget ||
-        hasActiveSwitchMapTarget ||
-        (!untilTriggered && operators.length > 0 && operators[operators.length - 1].type === 'consumer')
-      ) {
-        emitterToCheck.isHot.update((s) => true);
-        emittersInLine.forEach((e) => e.hot.update(() => true));
-      } else {
-        emitterToCheck.isHot.update((s) => false);
+      const isHot =
+        (!untilTriggered && hasActiveSwitchMapTarget) ||
+        (operators.length > 0 && operators[operators.length - 1].type === 'consumer');
 
-        emittersInLine.forEach((e) => e.hot.update(() => false));
-      }
+      emitterToCheck.isHot.update((s) => isHot);
+      emitters.forEach((e) => e.hot.update(() => isHot));
     });
-
-    console.log('took ', Date.now() - startTime);
   }
 
   save() {
     const emitters = this.emitters()
       .filter((e) => e.isStartEmitter)
       .map((e) => {
+        console.log('save ', e);
         return {
+          id: e.id,
           type: e.type,
         };
       });
 
-    const operators = this.operators().map((o) => {
+    const operators = this.operators().map((o: any) => {
+      console.log('Operator ', o);
       return {
         type: o.type,
         x: o.x(),
         y: o.y(),
+        id: o.id,
         width: o.width(),
         height: o.height(),
-        value1: o.value1
+        value1: o.value1,
+        targetID: o.targetOperator?.id,
       };
     });
 
@@ -464,19 +518,61 @@ export class StreamVizComponent {
       stored.emitters.forEach((e: any) => {
         const emitterDescription = this.streamVizService.emitters().find((d) => d.name === e.type);
         if (emitterDescription) {
-          this.addEmitterFromDescription(emitterDescription);
+          const emitter = this.addEmitterFromDescription(emitterDescription);
+          if (emitter) {
+            emitter.id = e.id;
+          }
         }
       });
 
+      console.log('Operators', stored.operators);
+
+      const operatorsWithoutDescription = stored.operators.filter((o: any) =>
+        this.streamVizService.operators().find((d) => d.name === o.type),
+      );
+
       stored.operators.forEach((o: any) => {
-        const operatorDescription = this.streamVizService.operators().find((d) => d.name === o.type);
+        const operatorDescription = this.streamVizService
+          .operators()
+          .find((d) => d.name.toLowerCase() === o.type.toLowerCase());
         if (operatorDescription) {
           const operator = this.addOperator(operatorDescription);
+          console.log('Add operator ', operator.type);
           operator.x.update(() => o.x);
           operator.y.update(() => o.y);
           operator.width.update(() => o.width);
           operator.height.update(() => o.height);
           operator.value1 = o.value1;
+          operator.id = o.id;
+
+          if (o.targetID) {
+            console.log('yes target ID');
+            const storedOp = stored.operators.find((op: any) => op.id === o.targetID);
+            console.log('Target ID ', o.targetID);
+
+            let targetOperator;
+            if (o.type === 'switchMapTo') {
+              targetOperator = this.addOperator({
+                implementation: SwitchMapToOperatorTarget,
+                name: 'switchMapToTarget',
+              }) as any;
+            } else if (o.type === 'takeuntil') {
+              targetOperator = this.addOperator({
+                implementation: TakeUntilOperatorTarget,
+                name: 'switchMapToTarget',
+              }) as any;
+            }
+            console.log('target operator ', targetOperator);
+
+            (operator as any).addTarget(targetOperator);
+
+            targetOperator.x.update(() => storedOp.x);
+            targetOperator.y.update(() => storedOp.y);
+            targetOperator.width.update(() => storedOp.width);
+            targetOperator.height.update(() => storedOp.height);
+          }
+        } else {
+          console.log('no description', o);
         }
       });
 

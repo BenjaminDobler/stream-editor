@@ -19,17 +19,14 @@ export abstract class Emitter {
   public belongsToOperator?: Operator;
   y: WritableSignal<number> = signal(0);
   x: WritableSignal<number> = signal(0);
-  width = 40;
+  width = 90;
   destroyed$: Subject<void> = new Subject<void>();
   color = getRandomColor();
   isStartEmitter?: boolean;
   public id: number = IDGenerator.getID();
   public type: string = '';
-  
+
   hot = signal(false);
-
-
-
   isHot: WritableSignal<boolean> = signal(false);
 
   onItem?: (item: Item) => void;

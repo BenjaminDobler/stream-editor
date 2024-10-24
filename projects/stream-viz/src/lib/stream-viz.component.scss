@@ -22,6 +22,10 @@
     text-decoration: dashed;
     border-bottom: dashed 1px;
   }
+
+  &.isTarget {
+    background: #000 !important;
+  }
 }
 
 .emitter-button {
