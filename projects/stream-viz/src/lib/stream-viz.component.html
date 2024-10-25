@@ -46,44 +46,14 @@
 </div>
 
 <div #stage style="display: flex; position: relative">
-  <svg width="1400" height="900" style="position: absolute; left: 0; top: 0">
-    <defs>
-      <!-- A marker to be used as an arrowhead -->
-      <marker
-        id="arrow"
-        viewBox="0 0 20 20"
-        refX="6"
-        refY="6"
-        markerWidth="18"
-        markerHeight="18"
-        stroke="context-stroke"
-        fill="white"
-        orient="auto-start-reverse"
-      >
-        <path d="M 0 0 L 12 6 L 0 12 z" />
-      </marker>
 
-      <marker id="circle" markerWidth="12" markerHeight="12" refX="13" refY="6" markerUnits="strokeWidth">
-        <circle cx="6" cy="6" r="4" stroke="context-stroke" fill="#1E1E1E" />
-      </marker>
-    </defs>
 
-    <!-- A line with a marker -->
+  <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
-    @for (connection of connections(); track connection) {
-      <line
-        [attr.x1]="connection.from.x"
-        [attr.y1]="connection.from.y"
-        [attr.x2]="connection.to.x"
-        [attr.y2]="connection.to.y"
-        stroke="white"
-        stroke-width="1"
-        [attr.stroke-dasharray]="connection.dash"
-        marker-start="url(#circle)"
-        marker-end="url(#arrow)"
-      />
-    }
-  </svg>
+  
+
+
+
   <div style="position: absolute; left: 0; top: 0" #pixi></div>
 
   @for (emitter of emitters(); track emitter.id) {
@@ -177,14 +147,57 @@
             }
 
             @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
-              <button (click)="$any(operator).selectTarget($event, stage)">T</button>
+              <!-- <button (click)="$any(operator).selectTarget($event, stage)">T</button> -->
+              <img (click)="$any(operator).selectTarget($event, stage)" width="20" height="20" src="./assets/target.png" />
+
             }
           </div>
         } @else {
-          <img width="16" height="16" src="./assets/target.png" />
+          <img style="user-select: none;" width="16" height="16" src="./assets/target.png" />
         }
       </div>
     }
+
+
+    <connections [connections]="targetConnections()"></connections>
+<!-- 
+    <svg width="1400" height="900" style="position: absolute; left: 0; top: 0;pointer-events: none">
+      <defs>
+        <marker
+          id="arrow"
+          viewBox="0 0 20 20"
+          refX="6"
+          refY="6"
+          markerWidth="18"
+          markerHeight="18"
+          stroke="context-stroke"
+          fill="white"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 12 6 L 0 12 z" />
+        </marker>
+  
+        <marker id="circle" markerWidth="12" markerHeight="12" refX="13" refY="6" markerUnits="strokeWidth">
+          <circle cx="6" cy="6" r="4" stroke="context-stroke" fill="#1E1E1E" />
+        </marker>
+      </defs>
+  
+  
+      @for (connection of targetConnections(); track connection) {
+        <line
+          [attr.x1]="connection.from.x"
+          [attr.y1]="connection.from.y"
+          [attr.x2]="connection.to.x"
+          [attr.y2]="connection.to.y"
+          stroke="white"
+          stroke-width="1"
+          [attr.stroke-dasharray]="connection.dash"
+          marker-end="url(#arrow)"
+        />
+      }
+    </svg> -->
+
+
   </div>
 </div>
 

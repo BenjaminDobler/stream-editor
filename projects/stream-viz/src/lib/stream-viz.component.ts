@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   EnvironmentInjector,
   inject,
@@ -30,11 +31,12 @@ import { fromEvent, take, takeUntil } from 'rxjs';
 import { SwitchMapToOperatorTarget } from './model/operators/switchMapToTarget.operator';
 import { SignalObject } from './model/types';
 import { Tap } from './model/tap';
+import { ConnectionsComponent } from './components/connections/connections.component';
 
 @Component({
   selector: 'stream-viz',
   standalone: true,
-  imports: [RouterOutlet, FormsModule, DraggerDirective, ContextMenuModule, DropdownModule],
+  imports: [RouterOutlet, FormsModule, DraggerDirective, ContextMenuModule, DropdownModule, ConnectionsComponent],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',
   styleUrl: './stream-viz.component.scss',
@@ -110,6 +112,11 @@ export class StreamVizComponent {
 
   items: WritableSignal<Item[]> = signal([]);
   emitters: WritableSignal<Emitter[]> = signal([]);
+  rootEmitters = computed(() => this.emitters().filter((e) => e.isStartEmitter));
+  connections: WritableSignal<any[]> = signal<any[]>([]);
+  targetConnections = computed(()=>this.connections().filter(c=>c.isTargetConnection));
+  noneTargetConnections = computed(()=>this.connections().filter(c=>!c.isTargetConnection));
+
 
   operators: WritableSignal<Operator[]> = signal([]);
 
@@ -205,7 +212,6 @@ export class StreamVizComponent {
     });
   }
 
-  connections: WritableSignal<any[]> = signal<any[]>([]);
 
   updateOperatorInputs() {
     this.operators.update((x) =>
@@ -255,9 +261,10 @@ export class StreamVizComponent {
       const destination = (o as TakeUntilOperator).targetOperator;
       if (destination) {
         cons.push({
+          isTargetConnection: true,
           from: {
-            x: source.x(),
-            y: source.y(),
+            x: source.x()  + source?.width() - 20,
+            y: source.y() + source?.height() / 2,
           },
           to: {
             x: destination?.x() + destination?.width() / 2,
@@ -267,12 +274,12 @@ export class StreamVizComponent {
       }
     });
 
-    this.connections.update(() => cons);
 
     switchMapOperatorsWithTarget.forEach((o) => {
       const source = o;
       const destination = (o as SwitchMapToOperator).targetOperator;
       cons.push({
+        isTargetConnection: true,
         from: {
           x: source.x(),
           y: source.y(),
@@ -283,6 +290,9 @@ export class StreamVizComponent {
         },
       });
     });
+
+    this.connections.update(() => cons);
+
   }
 
   addItem(item: Item) {
