@@ -19,8 +19,13 @@
     "importHelpers": true,
     "target": "ES2022",
     "paths": {
-      "@richapps/rx-drag": ["./projects/rx-drag/src/public-api.ts"],
-      "stream-viz": ["./projects/stream-viz/src/public-api.ts"]
+      "@richapps/rx-drag": [
+        "./dist/rx-drag/"
+      ],
+      "@richapps/ng-monaco": [
+        "./dist/ng-monaco"
+      ],
+      "@richapps/stream-viz": ["./dist/stream-viz"]
     },
     "module": "ES2022",
     "lib": ["ES2022", "dom"]

@@ -1,0 +1,21 @@
+@let op = operator();
+
+@if (op && op.type !== "takeuntiltarget" && op.type !== "switchMapToTarget") {
+  <div style="display: flex;">
+    {{ op.type }}
+    @if (op.type === "throttle" || op.type === "debounce" || op.type === "skip" || op.type === "take") {
+      <br />
+      <input class="input" [(ngModel)]="op.value1" />
+    }
+    @if (op.type === "consumer") {
+      {{ op.count() }}
+    }
+
+    @if (op.type === "takeuntil" || op.type === "switchMapTo") {
+      <img draggable="false" (click)="$any(op).selectTarget($event)" width="20" height="20" src="./assets/target.png" />
+    }
+  </div>
+} @else {
+  <img style="user-select: none" draggable="false" width="16" height="16" src="./assets/target.png" />
+}
+

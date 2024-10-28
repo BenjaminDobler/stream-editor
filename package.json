@@ -19,6 +19,8 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@types/mqtt": "^0.0.34",
+    "monaco-editor": "0.50.0",
+    "ngx-monaco-editor-v2": "^18.1.0",
     "pixi": "^0.3.1",
     "pixi.js": "^8.5.1",
     "prettier": "^3.3.3",

@@ -1,0 +1,25 @@
+<p-splitter (onResizeEnd)="onHorizontalResizeEnd($event)" [style]="{ height: '100%' }"  >
+  <ng-template pTemplate>
+    <p-splitter [style]="{ height: '100%' }"  layout="vertical">
+      <ng-template pTemplate>
+        <div class="col flex align-items-center justify-content-center">
+
+            <ng-content select="[main]"></ng-content>
+
+        </div>
+      </ng-template>
+      <ng-template pTemplate>
+        <div class="col flex align-items-center justify-content-center">
+            <ng-content select="[debug]"></ng-content>
+
+        </div>
+      </ng-template>
+    </p-splitter>
+  </ng-template>
+  <ng-template pTemplate>
+    <div style="width: 100%;min-width: 290px;">
+        <ng-content select="[sidebar]"></ng-content>
+
+    </div>
+  </ng-template>
+</p-splitter>

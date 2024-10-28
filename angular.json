@@ -3,36 +3,38 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "line-animation": {
+    "stream-viz-demo": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "",
-      "sourceRoot": "src",
+      "root": "projects/apps/stream-viz-demo/",
+      "sourceRoot": "projects/apps/stream-viz-demo/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/line-animation",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": [
-            ],
-            "tsConfig": "tsconfig.app.json",
+            "outputPath": "dist/apps/stream-viz-demo",
+            "index": "projects/apps/stream-viz-demo/src/index.html",
+            "browser": "projects/apps/stream-viz-demo/src/main.ts",
+            "polyfills": [],
+            "tsConfig": "projects/apps/stream-viz-demo/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "/assets/monaco/"
+              },
               {
                 "glob": "**/*",
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["projects/apps/stream-viz-demo/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -63,10 +65,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "line-animation:build:production"
+              "buildTarget": "stream-viz-demo:build:production"
             },
             "development": {
-              "buildTarget": "line-animation:build:development"
+              "buildTarget": "stream-viz-demo:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -77,9 +79,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [
-              
-            ],
+            "polyfills": [],
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -88,9 +88,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["projects/apps/stream-viz-demo/src/styles.scss"],
             "scripts": []
           }
         }
@@ -98,21 +96,21 @@
     },
     "stream-viz": {
       "projectType": "library",
-      "root": "projects/stream-viz",
-      "sourceRoot": "projects/stream-viz/src",
+      "root": "projects/libs/stream-viz",
+      "sourceRoot": "projects/libs/stream-viz/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/stream-viz/ng-package.json"
+            "project": "projects/libs/stream-viz/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/stream-viz/tsconfig.lib.prod.json"
+              "tsConfig": "projects/libs/stream-viz/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/stream-viz/tsconfig.lib.json"
+              "tsConfig": "projects/libs/stream-viz/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -120,32 +118,29 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/stream-viz/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "tsConfig": "projects/libs/stream-viz/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
     "rx-drag": {
       "projectType": "library",
-      "root": "projects/rx-drag",
-      "sourceRoot": "projects/rx-drag/src",
+      "root": "projects/libs/rx-drag",
+      "sourceRoot": "projects/libs/rx-drag/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "project": "projects/rx-drag/ng-package.json"
+            "project": "projects/libs/rx-drag/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/rx-drag/tsconfig.lib.prod.json"
+              "tsConfig": "projects/libs/rx-drag/tsconfig.lib.prod.json"
             },
             "development": {
-              "tsConfig": "projects/rx-drag/tsconfig.lib.json"
+              "tsConfig": "projects/libs/rx-drag/tsconfig.lib.json"
             }
           },
           "defaultConfiguration": "production"
@@ -153,46 +148,39 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "tsConfig": "projects/rx-drag/tsconfig.spec.json",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ]
+            "tsConfig": "projects/libs/rx-drag/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
     },
-    "drag-demo": {
+    "rx-drag-demo": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "projects/drag-demo",
-      "sourceRoot": "projects/drag-demo/src",
+      "root": "projects/apps/rx-drag-demo",
+      "sourceRoot": "projects/apps/rx-drag-demo/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/drag-demo",
-            "index": "projects/drag-demo/src/index.html",
-            "browser": "projects/drag-demo/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
-            "tsConfig": "projects/drag-demo/tsconfig.app.json",
+            "outputPath": "dist/rx-drag-demo",
+            "index": "projects/apps/rx-drag-demo/src/index.html",
+            "browser": "projects/apps/rx-drag-demo/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "projects/apps/rx-drag-demo/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/drag-demo/public"
+                "input": "projects/apps/rx-drag-demo/public"
               }
             ],
-            "styles": [
-              "projects/drag-demo/src/styles.scss"
-            ],
+            "styles": ["projects/apps/rx-drag-demo/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -223,10 +211,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "drag-demo:build:production"
+              "buildTarget": "rx-drag-demo:build:production"
             },
             "development": {
-              "buildTarget": "drag-demo:build:development"
+              "buildTarget": "rx-drag-demo:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -237,21 +225,137 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
-            "tsConfig": "projects/drag-demo/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "projects/apps/rx-drag-demo/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/drag-demo/public"
+                "input": "projects/apps/rx-drag-demo/public"
               }
             ],
-            "styles": [
-              "projects/drag-demo/src/styles.scss"
+            "styles": ["projects/apps/rx-drag-demo/src/styles.scss"],
+            "scripts": []
+          }
+        }
+      }
+    },
+    "ng-monaco": {
+      "projectType": "library",
+      "root": "projects/libs/ng-monaco",
+      "sourceRoot": "projects/libs/ng-monaco/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/libs/ng-monaco/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/libs/ng-monaco/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/libs/ng-monaco/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/libs/ng-monaco/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
+    },
+    "ng-monaco-demo": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/apps/ng-monaco-demo",
+      "sourceRoot": "projects/apps/ng-monaco-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/apps/ng-monaco/demo",
+            "index": "projects/apps/ng-monaco-demo/src/index.html",
+            "browser": "projects/apps/ng-monaco-demo/src/main.ts",
+            "polyfills": ["zone.js"],
+            "tsConfig": "projects/apps/ng-monaco-demo/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "node_modules/monaco-editor",
+                "output": "/assets/monaco/"
+              },
+              {
+                "glob": "**/*",
+                "input": "projects/apps/ng-monaco-demo/public"
+              }
             ],
+            "styles": ["projects/apps/ng-monaco-demo/src/styles.scss"],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kB",
+                  "maximumError": "4kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "ng-monaco-demo:build:production"
+            },
+            "development": {
+              "buildTarget": "ng-monaco-demo:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": ["zone.js", "zone.js/testing"],
+            "tsConfig": "projects/apps/ng-monaco-demo/tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/apps/ng-monaco-demo/public"
+              }
+            ],
+            "styles": ["projects/apps/ng-monaco-demo/src/styles.scss"],
             "scripts": []
           }
         }

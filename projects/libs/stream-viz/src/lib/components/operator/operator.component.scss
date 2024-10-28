@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  background: var(--operator-bg);
+  border-radius: 6px;
+  overflow: hidden;
+  //   border: solid 1px #222;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+
+  .input {
+    field-sizing: content;
+    background: transparent;
+    border: none;
+    color: #222;
+    text-decoration: dashed;
+    border-bottom: dashed 1px;
+  }
+
+  &.isTarget {
+    background: #000 !important;
+  }
+}
