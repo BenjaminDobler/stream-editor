@@ -4,6 +4,7 @@
 
 body {
 
+    margin: 0;
     --background-color: #1E1E1E;
     --sidebar-bg: #2c2c2c;
     --operator-bg: #0A8CE9;
@@ -22,4 +23,17 @@ body {
 .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
     padding: 0.25rem 0.75rem;
 
+}
+
+.p-splitter {
+    /* border: 1px solid #e5e7eb; */
+    /* background: #ffffff; */
+    /* border-radius: 6px; */
+    border: none;
+    background: none;
+    color: #4b5563;
+}
+
+.p-splitter-gutter {
+    background: #000;
 }
