@@ -37,6 +37,7 @@ import { OperatorComponent } from './components/operator/operator.component';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { JsonPipe } from '@angular/common';
 import { SplitterComponent } from './components/splitter/splitter.component';
+import { NgMonacoComponent } from '@richapps/ng-monaco';
 
 @Component({
   selector: 'stream-viz',
@@ -52,6 +53,7 @@ import { SplitterComponent } from './components/splitter/splitter.component';
     MonacoEditorModule,
     SplitterComponent,
     JsonPipe,
+    NgMonacoComponent,
   ],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',
@@ -502,10 +504,26 @@ export class StreamVizComponent {
     });
   }
 
+  selectedOperatorDataType: string = '';
   selectOperator(operator: Operator) {
+    if (this.selectedOperator === operator) {
+      this.selectedOperator = undefined;
+      return;
+    }
     this.selectedOperator = operator;
     const emitter = this.emitters().find((e) => e.operator === operator);
     console.log('Operator data type: ', emitter?.valueType);
+    if (emitter?.valueType) {
+      this.selectedOperatorDataType =
+        this.streamVizService.types +
+        `
+
+        declare const input:${emitter.valueType};
+      
+      `;
+
+      console.log(this.selectedOperatorDataType);
+    }
   }
 
   selectTap(tap: Tap) {
@@ -654,13 +672,13 @@ export class StreamVizComponent {
       lineOperators.forEach((o, index) => {
         const isLastLine = lineOperators.length - 1 === index;
         const c = o.getCode();
-        code += '    '+o.getCode() + (isLastLine ? '\n' : ',\n');
+        code += '    ' + o.getCode() + (isLastLine ? '\n' : ',\n');
       });
       code += ');';
       return code;
     });
 
-    const code = '\n'+streamCode.join('\n\n');
+    const code = '\n' + streamCode.join('\n\n');
     this.generatedCode = code;
   }
 }

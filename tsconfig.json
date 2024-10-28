@@ -23,9 +23,9 @@
         "./dist/rx-drag/"
       ],
       "@richapps/ng-monaco": [
-        "./dist/ng-monaco"
+        "./projects/libs/ng-monaco/src/public-api.ts"
       ],
-      "@richapps/stream-viz": ["./dist/stream-viz"]
+      "@richapps/stream-viz": ["./projects/libs/stream-viz/src/public-api.ts"]
     },
     "module": "ES2022",
     "lib": ["ES2022", "dom"]

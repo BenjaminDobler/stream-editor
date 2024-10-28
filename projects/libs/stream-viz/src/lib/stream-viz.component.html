@@ -167,18 +167,28 @@
   </div>
 </div>
 
-<div style="position: absolute; bottom: 0">
+<div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--sidebar-bg); display: flex; color: #fff">
   @if (selectedOperator) {
     @if (selectedOperator.type === "throttle") {
       <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
     } @else if (selectedOperator && selectedOperator.type === "filter") {
       <!-- <input type="text" [(ngModel)]="selectedOperator.value1" /> -->
-      <ngx-monaco-editor
+      <!-- <ngx-monaco-editor
         (onInit)="editorInitialized($event)"
         style="width: 500px"
         [options]="editorOptions"
         [(ngModel)]="selectedOperator.value1"
-      ></ngx-monaco-editor>
+      ></ngx-monaco-editor> -->
+
+      <div style="width: 300px">
+        <div>Filter function</div>
+        <ng-monaco
+          style="width: 300px"
+          [declarations]="selectedOperatorDataType"
+          [code]="selectedOperator.value1"
+          (codeChanged)="selectedOperator.value1 = $event"
+        ></ng-monaco>
+      </div>
     } @else {
       <input type="text" [(ngModel)]="selectedOperator.value1" />
       <input type="text" [(ngModel)]="selectedOperator.count" />
@@ -186,13 +196,23 @@
   }
 
   @if (selectedTap) {
-    {{ selectedTap.currentItem()?.value | json }}
+    <div style="min-width: 200px;">
+      <div>Selected Tap</div>
+      <div>
+        {{ selectedTap.currentItem()?.value | json }}
+      </div>
+    </div>
   }
 
-  <pre style="color: #dedede;">
-  {{ generatedCode }}
-</pre
-  >
+  <div>
+    <div>Code</div>
+    <div>
+      <pre style="color: #dedede">
+
+        {{ generatedCode }}
+      </pre>
+    </div>
+  </div>
 </div>
 
 <p-contextMenu #contextMenu appendTo="body" />

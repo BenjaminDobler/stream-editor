@@ -30,6 +30,8 @@ export interface EmitterDescription {
   providedIn: 'root',
 })
 export class StreamVizService {
+
+  public types: string = '';
   operators: WritableSignal<OperatorDescription[]> = signal([
     { implementation: CombineLatestOperator, name: 'combineLatest' },
     { implementation: MergeOperator, name: 'merge' },
@@ -51,5 +53,9 @@ export class StreamVizService {
 
   addEmitter(description: EmitterDescription) {
     this.emitters.update((x) => [...x, description]);
+  }
+
+  addTypes(types: string) {
+    this.types += types + '\n';
   }
 }
