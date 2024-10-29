@@ -1,7 +1,4 @@
 <div class="sidebar">
-  <!-- <button (click)="getOperatorLines()">Line</button> -->
-  <button (click)="generateCode()">Code</button>
-  {{ items().length }}
   <div class="sidebar-section">
     <div class="sidebar-header">Operators</div>
     <div class="operator-box">
@@ -32,187 +29,155 @@
     <button (click)="addTap()">Tap</button>
   </div>
 
-  <div>
-    <div class="sidebar-header">Taps</div>
-    @for (tap of taps(); track tap.id) {
-      @if (tap.currentItem()) {
-        {{ tap.currentItem()?.value }}
-      }
-    }
-  </div>
+  
 
   <button (click)="save()">Save</button>
   <button (click)="restore()">Restore</button>
   <button (click)="reset()">Reset</button>
 </div>
 
-<div #stage style="display: flex; position: relative">
-  <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
+<as-split direction="vertical">
+  <as-split-area [size]="100">
+    <div #stage style="display: flex; position: relative">
+      <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
-  <div style="position: absolute; left: 0; top: 0" #pixi></div>
+      <div style="position: absolute; left: 0; top: 0" #pixi></div>
 
-  @for (emitter of emitters(); track emitter.id) {
-    <div
-      (contextmenu)="onEmitterContextMenu($event, emitter)"
-      [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-      [style.background]="emitter.color"
-      [style.width]="emitter.width + 'px'"
-      style="color: #fff"
-      class="emitter"
-      (click)="emitter.activate()"
-    >
-      @if (emitter.isStartEmitter) {
-        {{ emitter.type }}
-      }
-      <!-- {{ emitter.hot() }} -->
-      @if (emitter.type === "interval") {
-        <input [(ngModel)]="emitter.property1" style="field-sizing: content; background: transparent; border: none" />
-      }
-    </div>
-  }
-
-  <div style="position: relative">
-    @for (counter of counters(); track counter.id) {
-      <div
-        [draggable]
-        [positioning]="'none'"
-        (heightUpdated)="counter.setHeight($event)"
-        (widthUpdated)="counter.setWidth($event)"
-        (positionUpdated)="counter.setPos($event)"
-        class="counter"
-        [style.width]="counter.width() + 'px'"
-        [style.height]="counter.height() + 'px'"
-        [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'"
-      >
-        {{ counter.count() }}
-        <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
-      </div>
-    }
-
-    @for (tap of taps(); track tap.id) {
-      <div
-        (click)="selectTap(tap)"
-        [draggable]
-        [positioning]="'none'"
-        (heightUpdated)="tap.setHeight($event)"
-        (widthUpdated)="tap.setWidth($event)"
-        (positionUpdated)="tap.setPos($event)"
-        class="counter"
-        [style.width]="tap.width() + 'px'"
-        [style.height]="tap.height() + 'px'"
-        [style.transform]="'translate(' + tap.x() + 'px,' + tap.y() + 'px)'"
-      >
-        {{ tap.count() }}
-        <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
-      </div>
-    }
-
-    @for (operator of operators(); track operator.id) {
-      <!-- <div
-        (click)="selectedOperator = operator"
-        (contextmenu)="onObstacleContextMenu($event, operator)"
-        [draggable]
-        [positioning]="'none'"
-        (heightUpdated)="operator.setHeight($event)"
-        (widthUpdated)="operator.setWidth($event)"
-        [minHeight]="20"
-        [minWidth]="20"
-        (positionUpdated)="operator.setPos($event)"
-        class="operator"
-        [class.isTarget]="operator.type === 'takeuntiltarget' || operator.type === 'switchMapToTarget'"
-        [resizable]="operator.type !== 'takeuntiltarget' && operator.type !== 'switchMapToTarget'"
-        [style.width]="operator.width() + 'px'"
-        [style.height]="operator.height() + 'px'"
-        [style.background]="$any(operator).triggered ? '#ff0000' : 'var(--operator-bg)'"
-        [style.transform]="'translate(' + operator.x() + 'px,' + operator.y() + 'px)'"
-      >
-        @if (operator.type !== "takeuntiltarget" && operator.type !== "switchMapToTarget") {
-          <div>
-            {{ operator.type }}
-            @if (
-              operator.type === "throttle" ||
-              operator.type === "debounce" ||
-              operator.type === "skip" ||
-              operator.type === "take"
-            ) {
-              <br />
-              <input style="field-sizing: content" [(ngModel)]="operator.value1" />
+      @for (emitter of emitters(); track emitter.id) {
+        @if (emitter.isStartEmitter) {
+          <div
+            (contextmenu)="onEmitterContextMenu($event, emitter)"
+            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
+            [style.width]="emitter.width + 'px'"
+            style="color: #fff"
+            class="emitter start"
+            (click)="emitter.activate()"
+          >
+            <div class="type">
+              {{ emitter.type }}
+            </div>
+            <div class="color-indicator" [style.background]="emitter.color"></div>
+          </div>
+        } @else {
+          <div
+            (contextmenu)="onEmitterContextMenu($event, emitter)"
+            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
+            [style.background]="emitter.color"
+            [style.width]="emitter.width + 'px'"
+            style="color: #fff"
+            class="emitter"
+            (click)="emitter.activate()"
+          >
+            @if (emitter.isStartEmitter) {
+              {{ emitter.type }}
             }
-            @if (operator.type === "consumer") {
-              {{ operator.count() }}
-            }
-
-            @if (operator.type === "takeuntil" || operator.type === "switchMapTo") {
-              <img
-                (click)="$any(operator).selectTarget($event, stage)"
-                width="20"
-                height="20"
-                src="./assets/target.png"
+            <!-- {{ emitter.hot() }} -->
+            @if (emitter.type === "interval") {
+              <input
+                [(ngModel)]="emitter.property1"
+                style="field-sizing: content; background: transparent; border: none"
               />
             }
           </div>
-        } @else {
-          <img style="user-select: none" width="16" height="16" src="./assets/target.png" />
         }
-      </div> -->
+      }
 
-      <operator
-        [operator]="operator"
-        (click)="selectOperator(operator)"
-        (contextmenu)="onObstacleContextMenu($event, operator)"
-      ></operator>
-    }
+      <div style="position: relative">
+        @for (counter of counters(); track counter.id) {
+          <div
+            [draggable]
+            [positioning]="'none'"
+            (heightUpdated)="counter.setHeight($event)"
+            (widthUpdated)="counter.setWidth($event)"
+            (positionUpdated)="counter.setPos($event)"
+            class="counter"
+            [style.width]="counter.width() + 'px'"
+            [style.height]="counter.height() + 'px'"
+            [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'"
+          >
+            {{ counter.count() }}
+            <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
+          </div>
+        }
 
-    <connections [connections]="targetConnections()"></connections>
-  </div>
-</div>
+        @for (tap of taps(); track tap.id) {
+          <div
+            (click)="selectTap(tap)"
+            [draggable]
+            [positioning]="'none'"
+            (heightUpdated)="tap.setHeight($event)"
+            (widthUpdated)="tap.setWidth($event)"
+            (positionUpdated)="tap.setPos($event)"
+            class="counter"
+            [style.width]="tap.width() + 'px'"
+            [style.height]="tap.height() + 'px'"
+            [style.transform]="'translate(' + tap.x() + 'px,' + tap.y() + 'px)'"
+          >
+            {{ tap.count() }}
+            <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
+          </div>
+        }
 
-<div style="position: absolute; bottom: 0; left: 0; right: 0; background: var(--sidebar-bg); display: flex; color: #fff">
-  @if (selectedOperator) {
-    @if (selectedOperator.type === "throttle") {
-      <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
-    } @else if (selectedOperator && selectedOperator.type === "filter") {
-      <!-- <input type="text" [(ngModel)]="selectedOperator.value1" /> -->
-      <!-- <ngx-monaco-editor
-        (onInit)="editorInitialized($event)"
-        style="width: 500px"
-        [options]="editorOptions"
-        [(ngModel)]="selectedOperator.value1"
-      ></ngx-monaco-editor> -->
+        @for (operator of operators(); track operator.id) {
+          <operator
+            [operator]="operator"
+            (click)="selectOperator(operator)"
+            (contextmenu)="onObstacleContextMenu($event, operator)"
+          ></operator>
+        }
 
-      <div style="width: 300px">
-        <div>Filter function</div>
-        <ng-monaco
-          style="width: 300px"
-          [declarations]="selectedOperatorDataType"
-          [code]="selectedOperator.value1"
-          (codeChanged)="selectedOperator.value1 = $event"
-        ></ng-monaco>
-      </div>
-    } @else {
-      <input type="text" [(ngModel)]="selectedOperator.value1" />
-      <input type="text" [(ngModel)]="selectedOperator.count" />
-    }
-  }
-
-  @if (selectedTap) {
-    <div style="min-width: 200px;">
-      <div>Selected Tap</div>
-      <div>
-        {{ selectedTap.currentItem()?.value | json }}
+        <connections [connections]="targetConnections()"></connections>
       </div>
     </div>
-  }
+  </as-split-area>
+  <as-split-area [size]="0">
+    <div style="height: 100%; width: 100%; background: var(--sidebar-bg); display: flex; color: #fff">
+      @if (selectedOperator) {
+        @if (selectedOperator.type === "throttle") {
+          <div style="width: 300px">
+            <div>Throttle Options</div>
 
-  <div>
-    <div>Code</div>
-    <div>
-      <pre style="color: #dedede">
+            <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
+          </div>
+        } @else if (selectedOperator.type === "filter" || selectedOperator.type === 'map') {
+          <div style="width: 300px">
+            <div>Filter function</div>
+            <ng-monaco
+              style="width: 300px"
+              [declarations]="selectedOperatorDataType"
+              [code]="selectedOperator.value1"
+              (codeChanged)="selectedOperator.value1 = $event"
+            ></ng-monaco>
+          </div>
+        } @else {
+          <div style="width: 300px">
+            <div>Operator Options</div>
+            <input type="text" [(ngModel)]="selectedOperator.value1" />
+          </div>
+        }
+      }
+
+      @if (selectedTap) {
+        <div style="min-width: 200px">
+          <div>Selected Tap</div>
+          <div>
+            {{ selectedTap.currentItem()?.value | json }}
+          </div>
+        </div>
+      }
+
+      <div>
+        <div>Code</div>
+        <div>
+          <pre style="color: #dedede">
 
         {{ generatedCode }}
-      </pre>
+      </pre
+          >
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </as-split-area>
+</as-split>
 
 <p-contextMenu #contextMenu appendTo="body" />

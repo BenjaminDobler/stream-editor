@@ -1,13 +1,17 @@
-import { BehaviorSubject, debounceTime, skip, Subject, switchMap, tap, throttleTime } from 'rxjs';
+import { BehaviorSubject, filter, map, Subject, switchMap, throttleTime } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
+import { Item } from '../item';
+import { signal, WritableSignal } from '@angular/core';
 
-export class SkipOperator extends Operator {
-  override type = 'skip';
+export class MapOperator extends Operator {
+  override type = 'map';
+  protected override _value1: any = '';
+  override width: WritableSignal<number> = signal(60);
+
 
   impact(item: any) {
-    this.count.update((x) => x + 1);
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
     } else {
@@ -15,11 +19,15 @@ export class SkipOperator extends Operator {
     }
   }
 
+  init() {}
+
   getCode() {
-    return `skip(${this.value1})`;
+    return `map(input => {
+      return ${this.value1}
+    })`
   }
 
-  init() {}
+  filterFunction: any;
 
   //input emitters
   setInputEmitters(e: Emitter[]) {
@@ -33,7 +41,7 @@ export class SkipOperator extends Operator {
         emitter.previousEmitter = e;
         emitter.valueType = e.valueType;
 
-        const source = new Subject();
+        const source: Subject<Item> = new Subject<Item>();
         emitter.x.update(() => this.x() + this.width()+2);
         emitter.y.update(() => e.y());
         emitter.width = 10;
@@ -41,10 +49,34 @@ export class SkipOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
-            tap(() => {
-              this.count.update((x) => 0);
+            map((filterFunctionString) => {
+              let filterFunction: any = () => true;
+              try {
+                var body = 'function( input ){ return ' + filterFunctionString + ' }';
+                var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
+                console.log(body);
+                filterFunction = new Function(wrap(body));
+              } catch (e) {
+                console.log('error creating filter function');
+              }
+              return filterFunction;
             }),
-            switchMap((t) => source.asObservable().pipe(skip(t))),
+            switchMap((t) =>
+              source.asObservable().pipe(
+                map((item: Item) => {
+                  // TODO: implement actual filter function
+                  console.log('filter item ', t);
+                  let res = item;
+                  try {
+                    res = t.call(null).call(null, item.value);
+                  } catch (e) {}
+
+                  item.value = res;
+                  return item;
+                  // return true;
+                }),
+              ),
+            ),
           ),
           emitter: emitter,
           sourceEmitter: e,

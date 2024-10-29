@@ -20,7 +20,7 @@
     "target": "ES2022",
     "paths": {
       "@richapps/rx-drag": [
-        "./dist/rx-drag/"
+        "./projects/libs/rx-drag/src/"
       ],
       "@richapps/ng-monaco": [
         "./projects/libs/ng-monaco/src/public-api.ts"

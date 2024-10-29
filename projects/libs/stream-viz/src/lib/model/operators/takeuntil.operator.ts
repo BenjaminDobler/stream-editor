@@ -82,9 +82,9 @@ export class TakeUntilOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width());
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
-        emitter.width = 5;
+        emitter.width = 10;
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
@@ -111,7 +111,7 @@ export class TakeUntilOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x() + this.width() + 5);
+        inp.emitter.x.update(() => this.x() + this.width() + 2);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });

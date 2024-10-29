@@ -2,10 +2,11 @@
 
 @if (op && op.type !== "takeuntiltarget" && op.type !== "switchMapToTarget") {
   <div style="display: flex;">
-    {{ op.type }}
     @if (op.type === "throttle" || op.type === "debounce" || op.type === "skip" || op.type === "take") {
-      <br />
-      <input class="input" [(ngModel)]="op.value1" />
+      {{op.type}}(<input class="input" [(ngModel)]="op.value1" />)
+    } @else {
+      {{ op.type }}
+
     }
     @if (op.type === "consumer") {
       {{ op.count() }}

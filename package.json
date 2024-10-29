@@ -5,9 +5,9 @@
   "scripts": {
     "build": "ng build",
     "ng": "ng",
-    "start": "ng serve",
-    "test": "ng test",
-    "watch": "ng build --watch --configuration development"
+    "ng-monaco:build": "ng build ng-monaco && node --import=tsx ./scripts/link.ts --project=ng-monaco",
+    "rx-drag:build": "ng build rx-drag && node --import=tsx ./scripts/link.ts --project=rx-drag",
+    "stream-viz:build": "ng build stream-viz && node --import=tsx ./scripts/link.ts --project=stream-viz"
   },
   "dependencies": {
     "@angular/animations": "^18.2.0",
@@ -18,7 +18,10 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/mqtt": "^0.0.34",
+    "angular-split": "^18.0.0-beta.2",
+    "fs-extra": "^11.2.0",
     "monaco-editor": "0.50.0",
     "ngx-monaco-editor-v2": "^18.1.0",
     "pixi": "^0.3.1",
@@ -41,6 +44,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^18.2.0",
+    "tsx": "^4.19.2",
     "typescript": "~5.5.2"
   }
 }

@@ -22,7 +22,6 @@ import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
 import * as PIXI from 'pixi.js';
 import { DropdownModule } from 'primeng/dropdown';
-import { SplitterModule } from 'primeng/splitter';
 
 import { EmitterDescription, OperatorDescription, StreamVizService } from './services/stream-viz.service';
 import { TakeUntilOperator } from './model/operators/takeuntil.operator';
@@ -34,10 +33,10 @@ import { SignalObject } from './model/types';
 import { Tap } from './model/tap';
 import { ConnectionsComponent } from './components/connections/connections.component';
 import { OperatorComponent } from './components/operator/operator.component';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { JsonPipe } from '@angular/common';
 import { SplitterComponent } from './components/splitter/splitter.component';
 import { NgMonacoComponent } from '@richapps/ng-monaco';
+import { AngularSplitModule } from 'angular-split';
 
 @Component({
   selector: 'stream-viz',
@@ -50,10 +49,10 @@ import { NgMonacoComponent } from '@richapps/ng-monaco';
     DropdownModule,
     ConnectionsComponent,
     OperatorComponent,
-    MonacoEditorModule,
     SplitterComponent,
     JsonPipe,
     NgMonacoComponent,
+    AngularSplitModule
   ],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',

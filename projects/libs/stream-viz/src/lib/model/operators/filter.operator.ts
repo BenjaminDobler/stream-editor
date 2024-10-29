@@ -3,10 +3,13 @@ import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
 import { Item } from '../item';
+import { signal, WritableSignal } from '@angular/core';
 
 export class FilterOperator extends Operator {
   override type = 'filter';
   protected override _value1: any = '';
+  override width: WritableSignal<number> = signal(60);
+
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -39,9 +42,9 @@ export class FilterOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source: Subject<Item> = new Subject<Item>();
-        emitter.x.update(() => this.x() + this.width());
+        emitter.x.update(() => this.x() + this.width()+2);
         emitter.y.update(() => e.y());
-        emitter.width = 5;
+        emitter.width = 10;
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
@@ -96,7 +99,7 @@ export class FilterOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x() + this.width() + 5);
+        inp.emitter.x.update(() => this.x() + this.width() + 2);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });

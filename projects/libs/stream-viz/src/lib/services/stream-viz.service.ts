@@ -13,6 +13,7 @@ import { SwitchMapToOperator } from '../model/operators/switchMapTo.operator';
 import { TakeOperator } from '../model/operators/take.operator';
 import { FilterOperator } from '../model/operators/filter.operator';
 import { PairwiseOperator } from '../model/operators/pairwise.operator';
+import { MapOperator } from '../model/operators/map.operator';
 
 export interface OperatorDescription {
   implementation: any;
@@ -43,6 +44,7 @@ export class StreamVizService {
     { implementation: FilterOperator, name: 'filter' },
     { implementation: TakeOperator, name: 'take' },
     { implementation: PairwiseOperator, name: 'pairwise' },
+    { implementation: MapOperator, name: 'map' },
     { implementation: ConsumerOperator, name: 'consumer' },
   ]);
 

@@ -29,7 +29,7 @@ export class DraggerDirective {
   @Output()
   heightUpdated: EventEmitter<number> = new EventEmitter<number>();
 
-  public resizeOffset = 10;
+  public resizeOffset = 5;
 
   ngAfterViewInit() {
     const itemElement = this.el?.nativeElement;

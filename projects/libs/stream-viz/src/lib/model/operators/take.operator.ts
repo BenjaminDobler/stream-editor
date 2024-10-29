@@ -34,20 +34,25 @@ export class TakeOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width());
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
-        emitter.width = 5;
+        emitter.width = 10;
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
             tap((x) => console.log('TAKE ', x)),
-            switchMap((t) => source.asObservable().pipe(take(t),tap({
-              complete: ()=>{
-                console.log('TAKE COMPLETED');
-                this.completed.update(x=>true);
-              }
-            }))),
+            switchMap((t) =>
+              source.asObservable().pipe(
+                take(t),
+                tap({
+                  complete: () => {
+                    console.log('TAKE COMPLETED');
+                    this.completed.update((x) => true);
+                  },
+                }),
+              ),
+            ),
           ),
           emitter: emitter,
           sourceEmitter: e,
@@ -71,7 +76,7 @@ export class TakeOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x() + this.width() + 5);
+        inp.emitter.x.update(() => this.x() + this.width() + 2);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });
