@@ -21,6 +21,31 @@ export class AppComponent {
 
     const exampleSocket = new WebSocket('ws://localhost:6345');
 
+    this.streamViz.addTypes(`
+      interface StatefulUInt32 {
+        status: 'STATUS_UNDEFINED' | 'STATUS_VALID' | 'STATUS_UNSUPPORTED' | 'STATUS_ERROR';
+        value: number;
+    }
+
+
+interface DetailedLocation {
+  status: 'STATUS_UNDEFINED' | 'STATUS_VALID' | 'STATUS_UNSUPPORTED' | 'STATUS_ERROR';
+  longitude: number;
+  latitude: number;
+  accuracyHorizontal: number;
+  altitudeWGS84: number;
+  accuracyVertical: number;
+  headingYawAngle: number;
+  accuracyHeadingYawAngle: number;
+  preciseLocalTimeSeconds: number;
+  speed2D: number;
+  accuracySpeed2D: number;
+  speed3D: number;
+  accuracySpeed3D: number;
+  altitudeMeanSeaLevel: number;
+}
+  `);
+
     const onConnectionOpen = () => {
       this.streamViz.addEmitter({
         implementationFactory: () => {
@@ -28,7 +53,7 @@ export class AppComponent {
           return new SpeedEmitter(obs$);
         },
         name: 'Speed',
-        valueType: 'SpeedDataType',
+        valueType: 'StatefulUInt32',
       });
 
       this.streamViz.addEmitter({
@@ -37,7 +62,7 @@ export class AppComponent {
           return new SpeedEmitter(obs$);
         },
         name: 'DeadReckoning',
-        valueType: 'DeadReckoningDataType',
+        valueType: 'DetailedLocation',
       });
     };
 

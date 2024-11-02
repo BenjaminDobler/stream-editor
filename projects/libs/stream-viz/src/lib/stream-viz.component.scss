@@ -143,7 +143,52 @@
   padding-bottom: 12px;
 }
 
-
 .as-split-gutter {
   background: #00ff00;
+}
+
+.custom-shade-gutter {
+  width: 100%;
+  height: 100%;
+  background-color: #1e1e1e;
+  position: relative;
+}
+
+.custom-shade-gutter-icon {
+  height: 100%;
+  width: 100%;
+  background-color: #444444;
+  transition: opacity 0.3s;
+  opacity: 0;
+  position: absolute;
+
+  .dragged &,
+  &:hover {
+    opacity: 0.1;
+  }
+
+  $shadeSize: 8px;
+
+  .as-horizontal & {
+    width: 1 + ($shadeSize * 2);
+    left: -$shadeSize;
+    right: $shadeSize;
+  }
+
+  .as-vertical & {
+    height: 1 + ($shadeSize * 2);
+    top: -$shadeSize;
+    bottom: $shadeSize;
+  }
+}
+
+.option-box {
+  border-right: solid 1px #444444;
+  flex: 1;
+
+  .header {
+    padding: 5px;
+    border-bottom: solid 1px #444444;
+
+  }
 }

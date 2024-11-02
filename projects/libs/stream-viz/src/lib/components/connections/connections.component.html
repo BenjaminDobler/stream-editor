@@ -1,5 +1,7 @@
 <svg width="1400" height="900" style="position: absolute; left: 0; top: 0">
+  
   <defs>
+    
     <marker
       id="arrow"
       viewBox="0 0 20 20"
@@ -19,7 +21,6 @@
     </marker>
 
   </defs>
-
   @for (connection of connections(); track connection.id) {
     <line
       [attr.x1]="connection.from.x"

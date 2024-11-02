@@ -29,14 +29,15 @@
     <button (click)="addTap()">Tap</button>
   </div>
 
-  
-
   <button (click)="save()">Save</button>
   <button (click)="restore()">Restore</button>
   <button (click)="reset()">Reset</button>
 </div>
 
 <as-split direction="vertical">
+  <div *asSplitGutter="let isDragged = isDragged" class="custom-shade-gutter" [class.dragged]="isDragged">
+    <div class="custom-shade-gutter-icon"></div>
+  </div>
   <as-split-area [size]="100">
     <div #stage style="display: flex; position: relative">
       <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
@@ -139,36 +140,38 @@
 
             <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
           </div>
-        } @else if (selectedOperator.type === "filter" || selectedOperator.type === 'map') {
-          <div style="width: 300px">
-            <div>Filter function</div>
+        } @else if (selectedOperator.type === "filter" || selectedOperator.type === "map") {
+          <div class="option-box" style="width: 500px">
+            <div class="header">Filter function</div>
             <ng-monaco
-              style="width: 300px"
+              style="width: 500px"
               [declarations]="selectedOperatorDataType"
               [code]="selectedOperator.value1"
               (codeChanged)="selectedOperator.value1 = $event"
             ></ng-monaco>
           </div>
         } @else {
-          <div style="width: 300px">
-            <div>Operator Options</div>
-            <input type="text" [(ngModel)]="selectedOperator.value1" />
+          <div class="option-box" style="width: 300px">
+            <div class="header">Operator Options</div>
+            <div style="padding: 5px">
+              <input type="text" [(ngModel)]="selectedOperator.value1" />
+            </div>
           </div>
         }
       }
 
       @if (selectedTap) {
-        <div style="min-width: 200px">
-          <div>Selected Tap</div>
+        <div class="option-box" style="min-width: 200px">
+          <div class="header">Selected Tap</div>
           <div>
             {{ selectedTap.currentItem()?.value | json }}
           </div>
         </div>
       }
 
-      <div>
-        <div>Code</div>
-        <div>
+      <div class="option-box">
+        <div class="header">Code</div>
+        <div style="padding: 5px">
           <pre style="color: #dedede">
 
         {{ generatedCode }}

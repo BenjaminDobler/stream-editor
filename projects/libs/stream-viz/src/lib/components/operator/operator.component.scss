@@ -1,5 +1,5 @@
 :host {
-  display: block;
+  display: flex;
   position: absolute;
   left: 0;
   top: 0;
@@ -28,4 +28,10 @@
   &.isTarget {
     background: #000 !important;
   }
+
+  .type {
+    pointer-events: none;
+    user-select: none;
+  }
 }
+

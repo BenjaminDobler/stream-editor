@@ -38,12 +38,12 @@ export class TakeUntilOperator extends Operator {
     target.height.update(() => 20);
 
     mousedown$.pipe(take(1)).subscribe((e) => {
-      target.x.update((x) => e.clientX - stageRect.x);
-      target.y.update((y) => e.clientY - stageRect.y);
+      target.x.update((x) => (e.clientX - stageRect.x) - target.width()/2);
+      target.y.update((y) => (e.clientY - stageRect.y)- target.height()/2);
     });
     mousemove$.pipe(takeUntil(mousedown$)).subscribe((e) => {
-      target.x.update((x) => e.clientX - stageRect.x);
-      target.y.update((y) => e.clientY - stageRect.y);
+      target.x.update((x) => (e.clientX - stageRect.x) - target.width()/2);
+      target.y.update((y) => (e.clientY - stageRect.y)- target.height()/2);
     });
   }
   override init(): void {

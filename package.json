@@ -7,6 +7,7 @@
     "ng": "ng",
     "ng-monaco:build": "ng build ng-monaco && node --import=tsx ./scripts/link.ts --project=ng-monaco",
     "rx-drag:build": "ng build rx-drag && node --import=tsx ./scripts/link.ts --project=rx-drag",
+    "start": "ng serve stream-viz-demo",
     "stream-viz:build": "ng build stream-viz && node --import=tsx ./scripts/link.ts --project=stream-viz"
   },
   "dependencies": {

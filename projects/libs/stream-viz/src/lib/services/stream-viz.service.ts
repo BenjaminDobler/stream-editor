@@ -25,6 +25,7 @@ export interface EmitterDescription {
   implementationFactory?: () => Emitter;
   name: string;
   valueType: string;
+  metadata?: string;
 }
 
 @Injectable({

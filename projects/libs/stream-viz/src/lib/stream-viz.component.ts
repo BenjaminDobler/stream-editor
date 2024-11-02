@@ -5,6 +5,7 @@ import {
   ElementRef,
   EnvironmentInjector,
   inject,
+  output,
   signal,
   viewChild,
   ViewChild,
@@ -37,6 +38,7 @@ import { JsonPipe } from '@angular/common';
 import { SplitterComponent } from './components/splitter/splitter.component';
 import { NgMonacoComponent } from '@richapps/ng-monaco';
 import { AngularSplitModule } from 'angular-split';
+import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geometry';
 
 @Component({
   selector: 'stream-viz',
@@ -52,7 +54,7 @@ import { AngularSplitModule } from 'angular-split';
     SplitterComponent,
     JsonPipe,
     NgMonacoComponent,
-    AngularSplitModule
+    AngularSplitModule,
   ],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',
@@ -64,6 +66,10 @@ export class StreamVizComponent {
 
   pixiElement = viewChild<ElementRef>('pixi');
   stage = viewChild<ElementRef>('stage');
+
+  outputIndex = output<number[]>();
+  codeChanged = output<string>();
+  rootEmittersChanged = output<Emitter[]>();
 
   public streamVizService: StreamVizService = inject(StreamVizService);
 
@@ -293,17 +299,25 @@ export class StreamVizComponent {
       const source = o;
       const destination = (o as TakeUntilOperator).targetOperator;
       if (destination) {
+        const fromP = {
+          x: source.x() + source?.width() - 20,
+          y: source.y() + source?.height() / 2,
+        };
+
+        const toP = {
+          x: destination?.x() + destination?.width() / 2,
+          y: destination?.y() + destination?.height() / 2,
+        };
+
+        const angle = angleRadians(fromP, toP);
+        const distance = distanceBetweenPoints(fromP, toP);
+        const newEndP = pointOnCircle(fromP, angle, distance - 20);
+
         cons.push({
           id: source.id + '-' + destination.id,
           isTargetConnection: true,
-          from: {
-            x: source.x() + source?.width() - 20,
-            y: source.y() + source?.height() / 2,
-          },
-          to: {
-            x: destination?.x() + destination?.width() / 2,
-            y: destination?.y() + destination?.height() / 2,
-          },
+          from: fromP,
+          to: newEndP,
         });
       }
     });
@@ -511,7 +525,6 @@ export class StreamVizComponent {
     }
     this.selectedOperator = operator;
     const emitter = this.emitters().find((e) => e.operator === operator);
-    console.log('Operator data type: ', emitter?.valueType);
     if (emitter?.valueType) {
       this.selectedOperatorDataType =
         this.streamVizService.types +
@@ -521,7 +534,6 @@ export class StreamVizComponent {
       
       `;
 
-      console.log(this.selectedOperatorDataType);
     }
   }
 
@@ -533,7 +545,6 @@ export class StreamVizComponent {
     const emitters = this.emitters()
       .filter((e) => e.isStartEmitter)
       .map((e) => {
-        console.log('save ', e);
         return {
           id: e.id,
           type: e.type,
@@ -541,7 +552,6 @@ export class StreamVizComponent {
       });
 
     const operators = this.operators().map((o: any) => {
-      console.log('Operator ', o);
       return {
         type: o.type,
         x: o.x(),
@@ -598,7 +608,6 @@ export class StreamVizComponent {
           .find((d) => d.name.toLowerCase() === o.type.toLowerCase());
         if (operatorDescription) {
           const operator = this.addOperator(operatorDescription);
-          console.log('Add operator ', operator.type);
           operator.x.update(() => o.x);
           operator.y.update(() => o.y);
           operator.width.update(() => o.width);
@@ -607,9 +616,7 @@ export class StreamVizComponent {
           operator.id = o.id;
 
           if (o.targetID) {
-            console.log('yes target ID');
             const storedOp = stored.operators.find((op: any) => op.id === o.targetID);
-            console.log('Target ID ', o.targetID);
 
             let targetOperator;
             if (o.type === 'switchMapTo') {
@@ -623,7 +630,6 @@ export class StreamVizComponent {
                 name: 'switchMapToTarget',
               }) as any;
             }
-            console.log('target operator ', targetOperator);
 
             (operator as any).addTarget(targetOperator);
 
@@ -662,6 +668,19 @@ export class StreamVizComponent {
     const rootEmitters = this.emitters().filter((e) => e.isStartEmitter);
     const lines = rootEmitters.map((e) => this.getLineFromEmitter(e));
 
+    const consumers = this.operators().filter((o) => o.type === 'consumer');
+    const consumerSourceEmitterIndexes = consumers.map((c) => {
+      const line = this.getLineWithOperator(c);
+      const emitter = line?.emitters[0];
+      let emitterIndex = -1;
+      if (emitter) {
+        emitterIndex = this.rootEmitters().indexOf(emitter);
+      }
+      return emitterIndex;
+    });
+
+    this.outputIndex.emit(consumerSourceEmitterIndexes);
+
     const streamCode = lines.map((line, index) => {
       const id = rootEmitters[index].id;
       let code = `const stream${id}$ = source${id}.pipe(\n`;
@@ -678,6 +697,8 @@ export class StreamVizComponent {
     });
 
     const code = '\n' + streamCode.join('\n\n');
+    this.rootEmittersChanged.emit(this.rootEmitters());
+    this.codeChanged.emit(code);
     this.generatedCode = code;
   }
 }
