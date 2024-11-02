@@ -37,6 +37,13 @@
           }
         }
       }
+    },
+    {
+      "type": "npm",
+      "script": "stream-viz:serve",
+      "problemMatcher": [],
+      "label": "npm: stream-viz:serve",
+      "detail": "ng serve stream-viz-demo"
     }
   ]
 }
