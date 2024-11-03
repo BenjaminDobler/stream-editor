@@ -1,9 +1,7 @@
-
 :host {
   display: block;
   height: 100vh;
 }
-
 
 .obstacle {
   position: absolute;
@@ -50,4 +48,16 @@
   border: 1px solid #000;
   box-sizing: border-box;
   position: absolute;
+}
+
+.sidebar-header {
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.sidebar-section {
+  border-bottom: solid 1px #444444;
+  padding-top: 12px;
+  padding-left: 12px;
+  padding-bottom: 12px;
 }

@@ -24,14 +24,24 @@
     }
   </div>
 
-  <div>
-    <button (click)="addCounter()">Counter</button>
-    <button (click)="addTap()">Tap</button>
+  <div class="sidebar-section">
+    <div class="sidebar-header">Other</div>
+
+    <div style="width: 100%; display: flex; gap: 5px">
+      <div (click)="addTap()" class="emitter-button" style="padding-left: 10px; padding-right: 10px">Tap</div>
+      <div (click)="addCounter()" class="emitter-button" style="padding-left: 10px; padding-right: 10px">Counter</div>
+    </div>
   </div>
 
-  <button (click)="save()">Save</button>
-  <button (click)="restore()">Restore</button>
-  <button (click)="reset()">Reset</button>
+
+  <ng-content select="[sidebar-item]"></ng-content>
+
+
+  <div style="width: 100%; display: flex; justify-content: space-around">
+    <p-button severity="secondary" (click)="saveAsVisible = true" label="Save" />
+    <p-button severity="secondary" (click)="restoreVisible = true" label="Restore" />
+    <p-button severity="secondary" (click)="reset()" label="Reset" />
+  </div>
 </div>
 
 <as-split direction="vertical">
@@ -184,3 +194,27 @@
 </as-split>
 
 <p-contextMenu #contextMenu appendTo="body" />
+
+<p-dialog header="Save Stream" [modal]="true" [(visible)]="saveAsVisible" [style]="{ width: '25rem' }">
+  <div class="flex align-items-center gap-3 mb-3">
+    <label for="username" class="font-semibold w-6rem">Sabe As</label>
+    <input #saveAsName pInputText id="username" class="flex-auto" autocomplete="off" />
+  </div>
+  <div class="flex justify-content-end gap-2">
+    <p-button label="Cancel" severity="secondary" (onClick)="saveAsVisible = false" />
+    <p-button label="Save" (onClick)="save(saveAsName.value); saveAsVisible = false" />
+  </div>
+</p-dialog>
+
+<p-dialog header="Load Stream" [modal]="true" [(visible)]="restoreVisible" [style]="{ width: '25rem' }">
+  <div class="flex gap-3 mb-3" style="flex-direction: column">
+    @for (s of stored; track s.name) {
+      <div (click)="restore(s); restoreVisible = false">
+        {{ s.name }}
+      </div>
+    }
+  </div>
+  <div class="flex justify-content-end gap-2">
+    <p-button label="Cancel" severity="secondary" (onClick)="restoreVisible = false" />
+  </div>
+</p-dialog>

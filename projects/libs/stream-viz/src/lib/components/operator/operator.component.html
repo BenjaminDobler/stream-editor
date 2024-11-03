@@ -4,11 +4,12 @@
   @if (op.type === "throttle" || op.type === "debounce" || op.type === "skip" || op.type === "take") {
     <span class="type">{{ op.type }}</span
     >(<input class="input" [(ngModel)]="op.value1" />)
-  } @else {
+  } @else if (op.type !== "consumer") {
     <span class="type">{{ op.type }}</span>
-  }
-  @if (op.type === "consumer") {
-    <span class="type">{{ op.count() }}</span>
+  } @else if (op.type === "consumer") {
+    
+    <input class="input" style="color: #fff;" [(ngModel)]="op.value1" />
+    <!-- <span class="type">{{ op.count() }}</span> -->
   }
 
   @if (op.type === "takeuntil" || op.type === "switchMapTo") {

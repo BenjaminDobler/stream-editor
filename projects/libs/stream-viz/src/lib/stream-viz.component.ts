@@ -23,6 +23,7 @@ import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
 import * as PIXI from 'pixi.js';
 import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
 
 import { EmitterDescription, OperatorDescription, StreamVizService } from './services/stream-viz.service';
 import { TakeUntilOperator } from './model/operators/takeuntil.operator';
@@ -39,6 +40,8 @@ import { SplitterComponent } from './components/splitter/splitter.component';
 import { NgMonacoComponent } from '@richapps/ng-monaco';
 import { AngularSplitModule } from 'angular-split';
 import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geometry';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'stream-viz',
@@ -55,6 +58,9 @@ import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geome
     JsonPipe,
     NgMonacoComponent,
     AngularSplitModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
   ],
   providers: [StreamVizComponent],
   templateUrl: './stream-viz.component.html',
@@ -67,9 +73,11 @@ export class StreamVizComponent {
   pixiElement = viewChild<ElementRef>('pixi');
   stage = viewChild<ElementRef>('stage');
 
-  outputIndex = output<number[]>();
+  outputsChanged = output<{ emitterIndex: number; consumer: Operator }[]>();
   codeChanged = output<string>();
   rootEmittersChanged = output<Emitter[]>();
+  consumersChanged = output<Operator[]>();
+  usedOperators = output<string[]>();
 
   public streamVizService: StreamVizService = inject(StreamVizService);
 
@@ -86,7 +94,18 @@ export class StreamVizComponent {
   generatedCode: string = '';
 
   code = '';
-  constructor(private injector: EnvironmentInjector) {}
+
+  saveAsVisible = false;
+  restoreVisible = false;
+
+  constructor(private injector: EnvironmentInjector) {
+    const storedString = localStorage.getItem('stored');
+    if (storedString) {
+      this.stored = JSON.parse(storedString);
+    } else {
+      this.stored = [];
+    }
+  }
 
   emitterContextMenuItems: MenuItem[] = [
     {
@@ -533,7 +552,6 @@ export class StreamVizComponent {
         declare const input:${emitter.valueType};
       
       `;
-
     }
   }
 
@@ -541,7 +559,9 @@ export class StreamVizComponent {
     this.selectedTap = tap;
   }
 
-  save() {
+  stored: { name: string; content: any }[] = [];
+
+  save(name: string) {
     const emitters = this.emitters()
       .filter((e) => e.isStartEmitter)
       .map((e) => {
@@ -573,87 +593,92 @@ export class StreamVizComponent {
       };
     });
 
-    localStorage.setItem(
-      'stored',
-      JSON.stringify({
+    this.stored = this.stored.filter((s) => s.name !== name);
+
+    this.stored.push({
+      name,
+      content: {
         operators,
         emitters,
         counters,
-      }),
-    );
+      },
+    });
+
+    localStorage.setItem('stored', JSON.stringify(this.stored));
   }
 
-  restore() {
-    const storedString = localStorage.getItem('stored');
-    if (storedString) {
-      const stored = JSON.parse(storedString);
+  currentStoredItem?: { name: string; content: any };
+  restore(storedData: { name: string; content: any }) {
+    this.currentStoredItem = storedData;
+    this.reset();
+    const stored = storedData.content;
 
-      stored.emitters.forEach((e: any) => {
-        const emitterDescription = this.streamVizService.emitters().find((d) => d.name === e.type);
-        if (emitterDescription) {
-          const emitter = this.addEmitterFromDescription(emitterDescription);
-          if (emitter) {
-            emitter.id = e.id;
-          }
+    stored.emitters.forEach((e: any) => {
+      const emitterDescription = this.streamVizService.emitters().find((d) => d.name === e.type);
+      if (emitterDescription) {
+        const emitter = this.addEmitterFromDescription(emitterDescription);
+        if (emitter) {
+          emitter.id = e.id;
         }
-      });
+      }
+    });
 
-      const operatorsWithoutDescription = stored.operators.filter((o: any) =>
-        this.streamVizService.operators().find((d) => d.name === o.type),
-      );
+    const operatorsWithoutDescription = stored.operators.filter((o: any) =>
+      this.streamVizService.operators().find((d) => d.name === o.type),
+    );
 
-      stored.operators.forEach((o: any) => {
-        const operatorDescription = this.streamVizService
-          .operators()
-          .find((d) => d.name.toLowerCase() === o.type.toLowerCase());
-        if (operatorDescription) {
-          const operator = this.addOperator(operatorDescription);
-          operator.x.update(() => o.x);
-          operator.y.update(() => o.y);
-          operator.width.update(() => o.width);
-          operator.height.update(() => o.height);
-          operator.value1 = o.value1;
-          operator.id = o.id;
+    stored.operators.forEach((o: any) => {
+      const operatorDescription = this.streamVizService
+        .operators()
+        .find((d) => d.name.toLowerCase() === o.type.toLowerCase());
+      if (operatorDescription) {
+        const operator = this.addOperator(operatorDescription);
+        operator.x.update(() => o.x);
+        operator.y.update(() => o.y);
+        operator.width.update(() => o.width);
+        operator.height.update(() => o.height);
+        operator.value1 = o.value1;
+        operator.id = o.id;
 
-          if (o.targetID) {
-            const storedOp = stored.operators.find((op: any) => op.id === o.targetID);
+        if (o.targetID) {
+          const storedOp = stored.operators.find((op: any) => op.id === o.targetID);
 
-            let targetOperator;
-            if (o.type === 'switchMapTo') {
-              targetOperator = this.addOperator({
-                implementation: SwitchMapToOperatorTarget,
-                name: 'switchMapToTarget',
-              }) as any;
-            } else if (o.type === 'takeuntil') {
-              targetOperator = this.addOperator({
-                implementation: TakeUntilOperatorTarget,
-                name: 'switchMapToTarget',
-              }) as any;
-            }
-
-            (operator as any).addTarget(targetOperator);
-
-            targetOperator.x.update(() => storedOp.x);
-            targetOperator.y.update(() => storedOp.y);
-            targetOperator.width.update(() => storedOp.width);
-            targetOperator.height.update(() => storedOp.height);
+          let targetOperator;
+          if (o.type === 'switchMapTo') {
+            targetOperator = this.addOperator({
+              implementation: SwitchMapToOperatorTarget,
+              name: 'switchMapToTarget',
+            }) as any;
+          } else if (o.type === 'takeuntil') {
+            targetOperator = this.addOperator({
+              implementation: TakeUntilOperatorTarget,
+              name: 'switchMapToTarget',
+            }) as any;
           }
-        } else {
-          console.log('no description', o);
+
+          (operator as any).addTarget(targetOperator);
+
+          targetOperator.x.update(() => storedOp.x);
+          targetOperator.y.update(() => storedOp.y);
+          targetOperator.width.update(() => storedOp.width);
+          targetOperator.height.update(() => storedOp.height);
         }
-      });
+      } else {
+        console.log('no description', o);
+      }
+    });
 
-      const newCouters = stored.counters.map((co: any) => {
-        const c = new Counter();
-        c.height.update(() => co.height);
-        c.width.update(() => co.width);
-        c.x.update(() => co.x);
-        c.y.update(() => co.y);
-        return c;
-      });
+    const newCouters = stored.counters.map((co: any) => {
+      const c = new Counter();
+      c.height.update(() => co.height);
+      c.width.update(() => co.width);
+      c.x.update(() => co.x);
+      c.y.update(() => co.y);
+      return c;
+    });
 
-      this.counters.update(() => newCouters);
-    }
+    this.counters.update(() => newCouters);
+
     this.updateOperatorInputs();
   }
 
@@ -667,6 +692,19 @@ export class StreamVizComponent {
   generateCode() {
     const rootEmitters = this.emitters().filter((e) => e.isStartEmitter);
     const lines = rootEmitters.map((e) => this.getLineFromEmitter(e));
+    console.log('lines', lines);
+
+    const operators = lines.reduce((prev, curr) => {
+      const ops = curr.operators.reduce((prev, curr) => {
+        prev[curr.type] = true;
+        return prev;
+      }, {} as any);
+      return { ...prev, ...ops };
+    }, {});
+
+    this.usedOperators.emit(Object.keys(operators));
+
+    // usedOperators
 
     const consumers = this.operators().filter((o) => o.type === 'consumer');
     const consumerSourceEmitterIndexes = consumers.map((c) => {
@@ -676,10 +714,15 @@ export class StreamVizComponent {
       if (emitter) {
         emitterIndex = this.rootEmitters().indexOf(emitter);
       }
-      return emitterIndex;
+      return {
+        emitterIndex,
+        consumer: c,
+      };
     });
 
-    this.outputIndex.emit(consumerSourceEmitterIndexes);
+    this.consumersChanged.emit(consumers);
+
+    this.outputsChanged.emit(consumerSourceEmitterIndexes);
 
     const streamCode = lines.map((line, index) => {
       const id = rootEmitters[index].id;

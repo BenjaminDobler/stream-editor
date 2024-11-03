@@ -4,22 +4,23 @@ import { Operator } from './base.operator';
 
 export class ConsumerOperator extends Operator {
   override type = 'consumer';
+
+  protected override _value1: any = 'twin/fx/';
   public override get value1() {
     return this._value1;
   }
   public override set value1(value) {
     this._value1 = value;
-    this.throttleTime$.next(value);
   }
 
-  throttleTime$ = new BehaviorSubject<number>(2000);
+
 
   getCode() {
     return '';
   }
 
   impact(item: any) {
-    this.count.update(x=>x+1);
+    this.count.update((x) => x + 1);
   }
 
   init() {}
@@ -28,15 +29,11 @@ export class ConsumerOperator extends Operator {
   setInputEmitters(e: Emitter[]) {
     let hasNewEmitters = false;
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter(
-      (k) => !e.find((em) => em.id === +k),
-    );
+    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) =>
-        emitters.filter((e) => e !== val.emitter),
-      );
+      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });

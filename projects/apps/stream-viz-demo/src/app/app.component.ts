@@ -2,11 +2,12 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { StreamVizComponent, StreamVizService } from '@richapps/stream-viz';
 import { SpeedEmitter } from './components/speed.emitter';
 import { Subject } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [StreamVizComponent],
+  imports: [StreamVizComponent, ButtonModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
