@@ -43,6 +43,7 @@ export class NgMonacoComponent {
       value: this.code(),
       language: 'typescript',
       theme: 'vs-dark',
+      automaticLayout: true,
     });
 
     this.editor.onDidChangeModelContent((e: any) => {

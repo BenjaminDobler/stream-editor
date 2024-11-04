@@ -33,14 +33,15 @@
     </div>
   </div>
 
-
   <ng-content select="[sidebar-item]"></ng-content>
 
-
-  <div style="width: 100%; display: flex; justify-content: space-around">
-    <p-button severity="secondary" (click)="saveAsVisible = true" label="Save" />
-    <p-button severity="secondary" (click)="restoreVisible = true" label="Restore" />
-    <p-button severity="secondary" (click)="reset()" label="Reset" />
+  <div
+    style="padding: 12px; width: 240px; display: flex; /* justify-content: space-around; */ flex-wrap: wrap; gap: 5px"
+  >
+    <p-button severity="secondary" icon="pi pi-save" (click)="saveAsVisible = true" label="Save" />
+    <p-button severity="secondary" icon="pi pi-folder-open" (click)="restoreVisible = true" label="Open" />
+    <p-button severity="secondary" icon="pi pi-trash" (click)="reset()" label="Reset" />
+    <p-button severity="secondary" icon="pi pi-file-import" (click)="importVisible = true" label="Import" />
   </div>
 </div>
 
@@ -143,52 +144,68 @@
   </as-split-area>
   <as-split-area [size]="0">
     <div style="height: 100%; width: 100%; background: var(--sidebar-bg); display: flex; color: #fff">
-      @if (selectedOperator) {
-        @if (selectedOperator.type === "throttle") {
-          <div style="width: 300px">
-            <div>Throttle Options</div>
-
-            <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
-          </div>
-        } @else if (selectedOperator.type === "filter" || selectedOperator.type === "map") {
-          <div class="option-box" style="width: 500px">
-            <div class="header">Filter function</div>
-            <ng-monaco
-              style="width: 500px"
-              [declarations]="selectedOperatorDataType"
-              [code]="selectedOperator.value1"
-              (codeChanged)="selectedOperator.value1 = $event"
-            ></ng-monaco>
-          </div>
-        } @else {
-          <div class="option-box" style="width: 300px">
-            <div class="header">Operator Options</div>
-            <div style="padding: 5px">
-              <input type="text" [(ngModel)]="selectedOperator.value1" />
-            </div>
-          </div>
-        }
-      }
-
-      @if (selectedTap) {
-        <div class="option-box" style="min-width: 200px">
-          <div class="header">Selected Tap</div>
-          <div>
-            {{ selectedTap.currentItem()?.value | json }}
-          </div>
+      <as-split direction="horizontal">
+        <div *asSplitGutter="let isDragged = isDragged" class="custom-shade-gutter" [class.dragged]="isDragged">
+          <div class="custom-shade-gutter-icon"></div>
         </div>
-      }
 
-      <div class="option-box">
-        <div class="header">Code</div>
-        <div style="padding: 5px">
-          <pre style="color: #dedede">
+          @if (selectedOperator) {
+            <as-split-area>
+
+            @if (selectedOperator.type === "throttle") {
+              <div style="width: 100%">
+                <div>Throttle Options</div>
+
+                <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
+              </div>
+            } @else if (selectedOperator.type === "filter" || selectedOperator.type === "map") {
+              <div class="option-box" style="width: 100%; height: 100%;">
+                <div class="header">Filter function</div>
+                <ng-monaco
+                  style="width: 100%"
+                  [declarations]="selectedOperatorDataType"
+                  [code]="selectedOperator.value1"
+                  (codeChanged)="selectedOperator.value1 = $event"
+                ></ng-monaco>
+              </div>
+            } @else {
+              <div class="option-box" style="width: 100%">
+                <div class="header">Operator Options</div>
+                <div style="padding: 5px">
+                  <input type="text" [(ngModel)]="selectedOperator.value1" />
+                </div>
+              </div>
+            }
+          </as-split-area>
+
+          }
+
+          @if (selectedTap) {
+            <as-split-area>
+
+            <div class="option-box" style="min-width: 200px">
+              <div class="header">Selected Tap</div>
+              <div>
+                {{ selectedTap.currentItem()?.value | json }}
+              </div>
+            </div>
+          </as-split-area>
+
+          }
+
+        <as-split-area>
+          <div class="option-box">
+            <div class="header">Code</div>
+            <div style="padding: 5px">
+              <pre style="color: #dedede">
 
         {{ generatedCode }}
       </pre
-          >
-        </div>
-      </div>
+              >
+            </div>
+          </div>
+        </as-split-area>
+      </as-split>
     </div>
   </as-split-area>
 </as-split>
@@ -216,5 +233,15 @@
   </div>
   <div class="flex justify-content-end gap-2">
     <p-button label="Cancel" severity="secondary" (onClick)="restoreVisible = false" />
+  </div>
+</p-dialog>
+
+<p-dialog header="Import" [modal]="true" [(visible)]="importVisible" [style]="{ width: '25rem' }">
+  <div class="flex align-items-center gap-3 mb-3">
+    <textarea #importtext></textarea>
+  </div>
+  <div class="flex justify-content-end gap-2">
+    <p-button label="Cancel" severity="secondary" (onClick)="importVisible = false" />
+    <p-button label="Import" (onClick)="importStream(importtext.value); importVisible = false" />
   </div>
 </p-dialog>

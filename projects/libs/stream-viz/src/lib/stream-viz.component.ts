@@ -97,6 +97,7 @@ export class StreamVizComponent {
 
   saveAsVisible = false;
   restoreVisible = false;
+  importVisible = false;
 
   constructor(private injector: EnvironmentInjector) {
     const storedString = localStorage.getItem('stored');
@@ -475,7 +476,7 @@ export class StreamVizComponent {
     this.updateOperatorInputs();
   }
 
-  getLineFromEmitter(emitterToCheck: Emitter) {
+  getLineFromEmitter(emitterToCheck: Emitter, followTargetSource = true) {
     let emittersInLine = [];
     let currentEmitter: Emitter | undefined = emitterToCheck;
     const operators = [];
@@ -486,7 +487,7 @@ export class StreamVizComponent {
         operators.push(currentEmitter.operator);
       }
 
-      if (currentEmitter.operator.type === 'takeuntiltarget') {
+      if (currentEmitter.operator.type === 'takeuntiltarget' && followTargetSource) {
         const takeUntilOperator = currentEmitter.operator as TakeUntilOperatorTarget;
         const takeUntilSourceOperator = takeUntilOperator.sourceOperator;
         currentEmitter = this.emitters().find((e) => e.operator === takeUntilSourceOperator);
@@ -595,14 +596,16 @@ export class StreamVizComponent {
 
     this.stored = this.stored.filter((s) => s.name !== name);
 
-    this.stored.push({
+    const newItem = {
       name,
       content: {
         operators,
         emitters,
         counters,
       },
-    });
+    };
+    this.stored.push(newItem);
+    this.currentStoredItem = newItem;
 
     localStorage.setItem('stored', JSON.stringify(this.stored));
   }
@@ -682,6 +685,11 @@ export class StreamVizComponent {
     this.updateOperatorInputs();
   }
 
+  importStream(data: string) {
+    this.reset();
+    this.restore({ name: 'imported', content: JSON.parse(data) });
+  }
+
   reset() {
     this.counters.update(() => []);
     this.emitters.update(() => []);
@@ -691,7 +699,7 @@ export class StreamVizComponent {
 
   generateCode() {
     const rootEmitters = this.emitters().filter((e) => e.isStartEmitter);
-    const lines = rootEmitters.map((e) => this.getLineFromEmitter(e));
+    const lines = rootEmitters.map((e) => this.getLineFromEmitter(e, false));
     console.log('lines', lines);
 
     const operators = lines.reduce((prev, curr) => {
@@ -724,22 +732,31 @@ export class StreamVizComponent {
 
     this.outputsChanged.emit(consumerSourceEmitterIndexes);
 
+    console.log('\n\n');
+    console.log('-------');
     const streamCode = lines.map((line, index) => {
       const id = rootEmitters[index].id;
-      let code = `const stream${id}$ = source${id}.pipe(\n`;
       const lineOperators = line.operators.filter(
         (o) => o.type !== 'consumer' && o.type !== 'switchMapToTarget' && o.type !== 'takeuntiltarget',
       );
-      lineOperators.forEach((o, index) => {
-        const isLastLine = lineOperators.length - 1 === index;
-        const c = o.getCode();
-        code += '    ' + o.getCode() + (isLastLine ? '\n' : ',\n');
-      });
-      code += ');';
+      let code = `const stream${id}$ = source${id}`;
+
+      if (lineOperators.length > 0) {
+        code = `const stream${id}$ = source${id}.pipe(\n`;
+
+        console.log(lines);
+        console.log('line operators ', lineOperators);
+        lineOperators.forEach((o, index) => {
+          const isLastLine = lineOperators.length - 1 === index;
+          const c = o.getCode();
+          code += '    ' + o.getCode() + (isLastLine ? '\n' : ',\n');
+        });
+        code += ');';
+      }
       return code;
     });
 
-    const code = '\n' + streamCode.join('\n\n');
+    const code = '\n' + streamCode.reverse().join('\n\n');
     this.rootEmittersChanged.emit(this.rootEmitters());
     this.codeChanged.emit(code);
     this.generatedCode = code;

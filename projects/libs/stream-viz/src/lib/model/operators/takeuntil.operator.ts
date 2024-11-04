@@ -16,7 +16,7 @@ export class TakeUntilOperator extends Operator {
     if (this.targetOperator) {
       const line = this.app.getLineWithOperator(this.targetOperator);
       const switchToEmitter = line?.emitters.find((x) => x.isStartEmitter);
-      code = `takeUntil(x => stream${switchToEmitter?.id}$)`;
+      code = `takeUntil(stream${switchToEmitter?.id}$)`;
     }
     return code;
   }

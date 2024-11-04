@@ -1,6 +1,6 @@
 {
   "name": "@richapps/stream-viz",
-  "version": "0.0.10",
+  "version": "0.0.14",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^2.3.0"
