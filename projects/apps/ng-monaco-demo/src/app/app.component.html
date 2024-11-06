@@ -1,4 +1,8 @@
-<ng-monaco [declarations]="declarations()"></ng-monaco>
+<ng-monaco language="typescript" style="display: block;width: 400px;height: 400px" [code]="tsCode" [declarations]="declarations()"></ng-monaco>
 
+<ng-monaco language="json" style="display: block;width: 400px;height: 400px" ></ng-monaco>
+
+
+<ng-monaco language="typescript" style="display: block;width: 400px;height: 400px" ></ng-monaco>
 
 <input type="text" [(ngModel)]="declarations" >

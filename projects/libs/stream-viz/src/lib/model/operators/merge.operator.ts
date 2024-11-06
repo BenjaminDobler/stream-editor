@@ -12,12 +12,13 @@ export class MergeOperator extends Operator {
     return `merge()`;
   }
 
+  reset() {
+  }
+
   impact(item: any) {
     // this.items.next(item);
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
@@ -78,7 +79,6 @@ export class MergeOperator extends Operator {
       this.combineSubscription.unsubscribe();
     }
     this.combineSubscription = merge(...sources).subscribe((data) => {
-      console.log('merge fire');
       this.combineOutput.next(data);
     });
 

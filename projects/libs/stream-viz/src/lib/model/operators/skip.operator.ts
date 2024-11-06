@@ -10,8 +10,6 @@ export class SkipOperator extends Operator {
     this.count.update((x) => x + 1);
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
@@ -20,6 +18,9 @@ export class SkipOperator extends Operator {
   }
 
   init() {}
+
+  reset() {
+  }
 
   //input emitters
   setInputEmitters(e: Emitter[]) {

@@ -73,6 +73,8 @@ export class StreamVizComponent {
   pixiElement = viewChild<ElementRef>('pixi');
   stage = viewChild<ElementRef>('stage');
 
+  el: ElementRef = inject(ElementRef);
+
   outputsChanged = output<{ emitterIndex: number; consumer: Operator }[]>();
   codeChanged = output<string>();
   rootEmittersChanged = output<Emitter[]>();
@@ -173,7 +175,6 @@ export class StreamVizComponent {
   app?: PIXI.Application;
 
   editorInitialized(e: any) {
-    console.log('editor initialized');
     // let monaco = window.monaco;
     // let model = monaco.editor.createModel("Hello");
     // editor.setModel(model)
@@ -204,7 +205,6 @@ export class StreamVizComponent {
   }
 
   onEmitterSelected(e: any) {
-    console.log(e);
   }
 
   async initPixi() {
@@ -415,17 +415,19 @@ export class StreamVizComponent {
       this.items.update((items) => [...items, item]);
     });
 
+    const bounds = this.el.nativeElement.getBoundingClientRect();
+
     if (event) {
-      o.x.update(() => event.clientX);
-      o.y.update(() => event.clientY);
+      o.x.update(() => event.clientX - bounds.left);
+      o.y.update(() => event.clientY - bounds.top);
       o.height.update(() => 50);
 
       const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove');
       const mouseup$ = fromEvent<MouseEvent>(document, 'mouseup');
 
       mousemove$.pipe(takeUntil(mouseup$.pipe(take(1)))).subscribe((me) => {
-        o.x.update(() => me.clientX);
-        o.y.update(() => me.clientY);
+        o.x.update(() => me.clientX - bounds.left);
+        o.y.update(() => me.clientY - bounds.top);
       });
     } else {
       o.x.update(() => 200);
@@ -469,10 +471,15 @@ export class StreamVizComponent {
   resetLine(emitterToCheck: Emitter) {
     let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
 
+    operators.forEach((o) => {
+      o.reset();
+    });
     let takeUntilOperators: TakeUntilOperator[] = operators.filter(
       (o: any) => o.type === 'takeuntil',
     ) as TakeUntilOperator[];
+
     takeUntilOperators.forEach((o) => (o.triggered = false));
+
     this.updateOperatorInputs();
   }
 
@@ -515,9 +522,6 @@ export class StreamVizComponent {
     startEmitters.forEach((emitterToCheck) => {
       let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
       let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeuntil');
-      if (untilTriggered) {
-        console.log('was trigerred!!!!!!!!');
-      }
       // let hasUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
       let hasSwitchMapTarget = operators.find((o: any) => o.type === 'switchMapToTarget') as SwitchMapToOperatorTarget;
 
@@ -666,8 +670,6 @@ export class StreamVizComponent {
           targetOperator.width.update(() => storedOp.width);
           targetOperator.height.update(() => storedOp.height);
         }
-      } else {
-        console.log('no description', o);
       }
     });
 
@@ -700,7 +702,6 @@ export class StreamVizComponent {
   generateCode() {
     const rootEmitters = this.emitters().filter((e) => e.isStartEmitter);
     const lines = rootEmitters.map((e) => this.getLineFromEmitter(e, false));
-    console.log('lines', lines);
 
     const operators = lines.reduce((prev, curr) => {
       const ops = curr.operators.reduce((prev, curr) => {
@@ -732,8 +733,6 @@ export class StreamVizComponent {
 
     this.outputsChanged.emit(consumerSourceEmitterIndexes);
 
-    console.log('\n\n');
-    console.log('-------');
     const streamCode = lines.map((line, index) => {
       const id = rootEmitters[index].id;
       const lineOperators = line.operators.filter(
@@ -743,9 +742,6 @@ export class StreamVizComponent {
 
       if (lineOperators.length > 0) {
         code = `const stream${id}$ = source${id}.pipe(\n`;
-
-        console.log(lines);
-        console.log('line operators ', lineOperators);
         lineOperators.forEach((o, index) => {
           const isLastLine = lineOperators.length - 1 === index;
           const c = o.getCode();

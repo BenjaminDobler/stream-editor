@@ -110,7 +110,7 @@ export class DraggerDirective {
     });
 
     drag.dragStart$.subscribe(() => {
-      console.log('drag start');
+      // console.log('drag start');
     });
   }
 }

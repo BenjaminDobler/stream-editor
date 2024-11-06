@@ -14,12 +14,13 @@ export class FilterOperator extends Operator {
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
   init() {}
+
+  reset() {
+  }
 
   getCode() {
     return `filter(input => {
@@ -54,10 +55,9 @@ export class FilterOperator extends Operator {
               try {
                 var body = 'function( input ){ return ' + filterFunctionString + ' }';
                 var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
-                console.log(body);
                 filterFunction = new Function(wrap(body));
               } catch (e) {
-                console.log('error creating filter function');
+                // console.log('error creating filter function');
               }
               return filterFunction;
             }),
@@ -65,7 +65,6 @@ export class FilterOperator extends Operator {
               source.asObservable().pipe(
                 filter((item: Item) => {
                   // TODO: implement actual filter function
-                  console.log('filter item ', t);
                   let res = true;
                   try {
                     res = t.call(null).call(null, item.value);

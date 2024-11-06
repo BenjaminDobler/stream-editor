@@ -15,11 +15,11 @@ export class CombineLatestOperator extends Operator {
     return `combineLatest(TODO)`;
   }
 
+  reset() {}
+
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
@@ -28,7 +28,6 @@ export class CombineLatestOperator extends Operator {
     if (e.length > 0 && !this.combineEmitter) {
       const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;
-      console.log('update emitter position');
       emitter.x.update(() => this.x() + this.width() + 1);
       emitter.y.update(() => this.y() + this.height() / 2 - 10);
       emitter.width = 5;
@@ -65,8 +64,6 @@ export class CombineLatestOperator extends Operator {
     });
 
     if (this.combineEmitter) {
-      console.log('combined type ', combinedEmitterTypes);
-      console.log(`[${combinedEmitterTypes.join(',')})]`);
       this.combineEmitter.valueType = `[${combinedEmitterTypes.join(',')})]`;
     }
 

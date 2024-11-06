@@ -10,12 +10,12 @@ export class MapOperator extends Operator {
   protected override _value1: any = '';
   override width: WritableSignal<number> = signal(60);
 
+  reset() {
+  }
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
@@ -54,10 +54,9 @@ export class MapOperator extends Operator {
               try {
                 var body = 'function( input ){ return ' + filterFunctionString + ' }';
                 var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
-                console.log(body);
                 filterFunction = new Function(wrap(body));
               } catch (e) {
-                console.log('error creating filter function');
+                // console.log('error creating filter function');
               }
               return filterFunction;
             }),
@@ -65,7 +64,6 @@ export class MapOperator extends Operator {
               source.asObservable().pipe(
                 map((item: Item) => {
                   // TODO: implement actual filter function
-                  console.log('filter item ', t);
                   let res = item;
                   try {
                     res = t.call(null).call(null, item.value);

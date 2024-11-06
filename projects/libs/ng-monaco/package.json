@@ -1,6 +1,6 @@
 {
   "name": "@richapps/ng-monaco",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^2.3.0"

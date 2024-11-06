@@ -4,7 +4,6 @@ import { Operator } from './base.operator';
 import { TakeUntilOperator } from './takeuntil.operator';
 
 export class SwitchMapToOperatorTarget extends Operator {
-
   override width: WritableSignal<number> = signal(20);
 
   public override type: string = 'switchMapToTarget';
@@ -16,20 +15,17 @@ export class SwitchMapToOperatorTarget extends Operator {
     return ``;
   }
 
-  override init(): void {
-    //throw new Error("Method not implemented.");
-  }
+  override init(): void {}
   override impact(item: any): void {
-    //throw new Error("Method not implemented.");
     this.emit$.next(item);
   }
-  override setInputEmitters(e: Emitter[]): void {
-    console.log('Method not implemented. set Emitters ', e);
-  }
+  override setInputEmitters(e: Emitter[]): void {}
+
+  reset() {}
 
   activateChain() {
-    console.log('activate chain');
     this.isActive = true;
+    this.app.resetLineWithOperator(this);
     this.app.updateOperatorInputs();
   }
 }

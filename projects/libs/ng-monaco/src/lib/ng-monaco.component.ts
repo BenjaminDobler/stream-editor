@@ -17,20 +17,24 @@ export class NgMonacoComponent {
 
   declarations = input<string>('');
   code = input<string>('');
-
   codeChanged = output<string>();
+  language = input<string>('typescript');
 
   constructor() {
     effect(() => {
-      console.log('declarations', this.declarations());
-      this.monaco.languages.typescript.typescriptDefaults.setExtraLibs([{ content: this.declarations() }]);
+      const declarations = this.declarations();
+      if (this.monaco) {
+        this.monaco.languages.typescript.typescriptDefaults.setExtraLibs([{ content: declarations }]);
+      }
     });
 
     effect(() => {
-      console.log('code changed: ', this.code());
-      const currentValue = this.editor.getModel().getValue();
-      if (currentValue !== this.code()) {
-        this.editor.getModel().setValue(this.code());
+      const code = this.code();
+      if (this.editor) {
+        const currentValue = this.editor.getModel().getValue();
+        if (currentValue !== code) {
+          this.editor.getModel().setValue(code);
+        }
       }
     });
   }
@@ -39,9 +43,13 @@ export class NgMonacoComponent {
     const monaco = await this.monacoService.load();
     this.monaco = monaco;
 
+    if (this.declarations() !== '') {
+      this.monaco.languages.typescript.typescriptDefaults.setExtraLibs([{ content: this.declarations() }]);
+    }
+
     this.editor = monaco.editor.create(this.editorEl()?.nativeElement, {
       value: this.code(),
-      language: 'typescript',
+      language: this.language(),
       theme: 'vs-dark',
       automaticLayout: true,
     });
@@ -55,7 +63,11 @@ export class NgMonacoComponent {
   }
 
   ngOnDestroy() {
-    this.editor.dispose();
-    this.model.dispose();
+    if (this.editor) {
+      this.editor.dispose();
+    }
+    if (this.model) {
+      this.model.dispose();
+    }
   }
 }

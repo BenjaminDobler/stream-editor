@@ -12,10 +12,14 @@ export class TakeOperator extends Operator {
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
+
+  reset() {
+    this.value1 = this.value1;
+    this.count.update(()=>0);
+  }
+
 
   init() {
     this.value1 = 5;
@@ -41,13 +45,11 @@ export class TakeOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
-            tap((x) => console.log('TAKE ', x)),
             switchMap((t) =>
               source.asObservable().pipe(
                 take(t),
                 tap({
                   complete: () => {
-                    console.log('TAKE COMPLETED');
                     this.completed.update((x) => true);
                   },
                 }),

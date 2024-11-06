@@ -1,5 +1,6 @@
 :host {
   display: block;
+  position: relative;
   height: 100%;
   --_as-gutter-background-color: #00ff00;
 }
@@ -190,6 +191,5 @@
   .header {
     padding: 5px;
     border-bottom: solid 1px #444444;
-
   }
 }

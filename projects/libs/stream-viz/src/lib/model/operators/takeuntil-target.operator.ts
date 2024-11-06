@@ -8,6 +8,9 @@ export class TakeUntilOperatorTarget extends Operator {
   getCode() {
     return '';
   }
+
+  reset() {
+  }
   override width: WritableSignal<number> = signal(20);
 
   public override type: string = 'takeuntiltarget';

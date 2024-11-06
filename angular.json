@@ -286,6 +286,11 @@
               },
               {
                 "glob": "**/*",
+                "input": "node_modules/rxjs/dist/types/",
+                "output": "/assets/rxjs/"
+              },
+              {
+                "glob": "**/*",
                 "input": "projects/apps/ng-monaco-demo/public"
               }
             ],

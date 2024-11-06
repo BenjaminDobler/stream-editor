@@ -9,12 +9,13 @@ export class PairwiseOperator extends Operator {
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 
   init() {}
+
+  reset() {
+  }
 
   getCode() {
     return 'pairwise()'

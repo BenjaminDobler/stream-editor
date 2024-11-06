@@ -54,6 +54,7 @@ export abstract class Operator {
 
   public emit$: Subject<any> = new Subject<any>();
 
+  abstract reset(): void;
 
   abstract getCode():string;
   //input emitters

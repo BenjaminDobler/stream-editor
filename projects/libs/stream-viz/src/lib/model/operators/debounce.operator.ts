@@ -19,11 +19,12 @@ export class DebounceOperator extends Operator {
     return `debounceTime(${this.value1})`;
   }
 
+  reset() {
+  }
+
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
   }
 

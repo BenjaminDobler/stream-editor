@@ -17,7 +17,6 @@ export class SplitterComponent {
 
 
   onHorizontalResizeEnd(e:any) {
-      console.log('horizontal resize end', e);
   }
 
  }

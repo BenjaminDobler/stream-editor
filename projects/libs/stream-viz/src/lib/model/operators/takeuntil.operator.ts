@@ -52,7 +52,6 @@ export class TakeUntilOperator extends Operator {
 
   addTarget(target: TakeUntilOperatorTarget) {
     target.emit$.subscribe(() => {
-      console.log('---------- triggered');
       this.triggered = true;
       this.app.updateOperatorInputs();
     });
@@ -61,12 +60,12 @@ export class TakeUntilOperator extends Operator {
   }
 
   impact(item: any) {
-    console.log('Impact!');
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
       this.inputEmitterObservables[item.emitterID].source.next(item);
-    } else {
-      console.log('NO EMITTER SET ', item.emitterID);
     }
+  }
+
+  reset() {
   }
 
   //input emitters

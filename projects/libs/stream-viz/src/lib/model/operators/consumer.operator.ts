@@ -13,7 +13,8 @@ export class ConsumerOperator extends Operator {
     this._value1 = value;
   }
 
-
+  reset() {
+  }
 
   getCode() {
     return '';

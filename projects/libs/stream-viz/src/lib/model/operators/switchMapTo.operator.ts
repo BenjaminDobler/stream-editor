@@ -16,6 +16,8 @@ export class SwitchMapToOperator extends Operator {
   combineSubscription?: Subscription;
   combineOutput: Subject<any> = new Subject<any>();
 
+  reset() {
+  }
   getCode() {
     if (this.targetOperator) {
       const line = this.app.getLineWithOperator(this.targetOperator);
@@ -58,7 +60,6 @@ export class SwitchMapToOperator extends Operator {
 
   addTarget(target: SwitchMapToOperatorTarget) {
     target.emit$.subscribe((item) => {
-      console.log('swtichMap target emitted item!');
       this.triggered = true;
       this.app.updateOperatorInputs();
       this.combineOutput.next(item);
@@ -67,7 +68,6 @@ export class SwitchMapToOperator extends Operator {
   }
 
   impact(item: any) {
-    console.log('switch to emitter - reset emitter');
     if (this.targetOperator) {
       this.app.resetLineWithOperator(this.targetOperator);
 
