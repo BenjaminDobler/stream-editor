@@ -316,6 +316,7 @@ export class StreamVizComponent {
     toRemove.forEach((item: Item) => {
       const sprite = this.itemSpriteMap.get(item);
       this.app?.stage.removeChild(sprite);
+      this.itemSpriteMap.delete(item);
     });
   }
 
@@ -752,8 +753,21 @@ export class StreamVizComponent {
   }
 
   reset() {
+    this.items().forEach((item) => {
+      const sprite = this.itemSpriteMap.get(item);
+      this.app?.stage.removeChild(sprite);
+      this.itemSpriteMap.delete(item);
+    });
+    this.items.set([]);
     this.counters.update(() => []);
+    this.emitters().forEach((e) => {
+      e.destroy();
+    });
     this.emitters.update(() => []);
+
+    // this.operators().forEach((o)=>{
+    //   o.destroy();
+    // });
     this.operators.update(() => []);
     this.updateOperatorInputs();
   }
