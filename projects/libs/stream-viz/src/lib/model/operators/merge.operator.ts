@@ -32,7 +32,7 @@ export class MergeOperator extends Operator {
       const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;
       emitter.x.update(() => this.x() + this.width() + 2);
-      emitter.y.update(() => this.y() + this.height() / 2 - 10);
+      emitter.y.update(() => this.y() + this.height() / 2);
       emitter.width = 10;
       this.app.addEmitter(emitter);
       this.combineEmitter = emitter;
@@ -50,7 +50,7 @@ export class MergeOperator extends Operator {
 
     if (this.combineEmitter) {
       this.combineEmitter.x.update(() => this.x() + this.width() + 2);
-      this.combineEmitter.y.update(() => this.y() + this.height() / 2 - 10);
+      this.combineEmitter.y.update(() => this.y() + this.height() / 2);
     }
 
     let hasNewEmitters = false;

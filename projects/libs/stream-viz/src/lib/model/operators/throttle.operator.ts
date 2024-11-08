@@ -17,8 +17,7 @@ export class ThrottleOperator extends Operator {
 
   init() {}
 
-  reset() {
-  }
+  reset() {}
 
   //input emitters
   setInputEmitters(e: Emitter[]) {

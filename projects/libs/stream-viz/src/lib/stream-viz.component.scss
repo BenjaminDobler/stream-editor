@@ -35,7 +35,7 @@
 }
 
 .emitter-button {
-  background: var(--operator-bg);
+  background: var(--emitter-btn-bg);
   border-radius: 6px;
   overflow: hidden;
   color: #fff;
@@ -86,7 +86,6 @@
   height: 20px;
   box-sizing: border-box;
   position: absolute;
-  overflow: hidden;
   border-bottom-right-radius: 3px;
   border-top-right-radius: 3px;
 
@@ -102,7 +101,7 @@
 
   .type {
     position: absolute;
-    background: #666;
+    background: var(--emitter-bg);
     border-bottom-left-radius: 3px;
     border-top-left-radius: 3px;
     left: 0;

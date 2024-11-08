@@ -4,13 +4,11 @@ import { Operator } from './base.operator';
 import { TakeUntilOperator } from './takeuntil.operator';
 
 export class TakeUntilOperatorTarget extends Operator {
-
   getCode() {
     return '';
   }
 
-  reset() {
-  }
+  reset() {}
   override width: WritableSignal<number> = signal(20);
 
   public override type: string = 'takeuntiltarget';

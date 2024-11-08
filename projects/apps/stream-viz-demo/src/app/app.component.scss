@@ -1,6 +1,7 @@
 :host {
-  display: block;
+  display: flex;
   height: 100vh;
+  flex-direction: column;
 }
 
 .obstacle {

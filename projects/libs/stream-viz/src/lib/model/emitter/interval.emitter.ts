@@ -21,8 +21,8 @@ export class IntervalEmitter extends Emitter {
         const item = new Item();
         item.colors = [this.color];
         item.value = count;
-        item.y.update(() => this.y() + 10);
-        item.x.update(()=>this.x() + this.width);
+        item.y.update(() => this.y());
+        item.x.update(() => this.x() + this.width);
         if (this.onItem) {
           this.onItem(item);
         }

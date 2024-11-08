@@ -18,10 +18,15 @@
     <div class="sidebar-header">Emitter</div>
 
     @for (emitterDescription of streamVizService.emitters(); track emitterDescription) {
-      <div class="emitter-button" (click)="addEmitterFromDescription(emitterDescription)">
+      <div
+        (contextmenu)="onEmitterDescriptionContext($event, emitterDescription)"
+        class="emitter-button"
+        (click)="addEmitterFromDescription(emitterDescription)"
+      >
         {{ emitterDescription.name }}
       </div>
     }
+    <ng-content select="[emitter-section]"></ng-content>
   </div>
 
   <div class="sidebar-section">
@@ -54,6 +59,7 @@
       <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
       <div style="position: absolute; left: 0; top: 0" #pixi></div>
+      @let eStyle = rootEmitterStyles();
 
       @for (emitter of emitters(); track emitter.id) {
         @if (emitter.isStartEmitter) {
@@ -63,33 +69,37 @@
             [style.width]="emitter.width + 'px'"
             style="color: #fff"
             class="emitter start"
+            [style.width]="eStyle.width + 'px'"
+            [style.height]="eStyle.height + 'px'"
             (click)="emitter.activate()"
           >
-            <div class="type">
-              {{ emitter.type }}
+            <div style="transform: translateY(-50%); width: 100%; height: 100%">
+              <div class="type" [style.lineHeight]="eStyle.height + 'px'">
+                {{ emitter.type }}
+              </div>
+              <div class="color-indicator" [style.background]="emitter.color"></div>
             </div>
-            <div class="color-indicator" [style.background]="emitter.color"></div>
           </div>
         } @else {
           <div
             (contextmenu)="onEmitterContextMenu($event, emitter)"
             [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-            [style.background]="emitter.color"
             [style.width]="emitter.width + 'px'"
             style="color: #fff"
             class="emitter"
             (click)="emitter.activate()"
           >
-            @if (emitter.isStartEmitter) {
-              {{ emitter.type }}
-            }
-            <!-- {{ emitter.hot() }} -->
-            @if (emitter.type === "interval") {
-              <input
-                [(ngModel)]="emitter.property1"
-                style="field-sizing: content; background: transparent; border: none"
-              />
-            }
+            <div style="transform: translateY(-50%); width: 100%; height: 100%" [style.background]="emitter.color">
+              @if (emitter.isStartEmitter) {
+                {{ emitter.type }}
+              }
+              @if (emitter.type === "interval") {
+                <input
+                  [(ngModel)]="emitter.property1"
+                  style="field-sizing: content; background: transparent; border: none"
+                />
+              }
+            </div>
           </div>
         }
       }
@@ -135,6 +145,8 @@
             [operator]="operator"
             (click)="selectOperator(operator)"
             (contextmenu)="onObstacleContextMenu($event, operator)"
+            [class.isConsumer]="operator.type === 'consumer'"
+            [class.completed]="operator.completed()"
           ></operator>
         }
 
@@ -149,9 +161,8 @@
           <div class="custom-shade-gutter-icon"></div>
         </div>
 
-          @if (selectedOperator) {
-            <as-split-area>
-
+        @if (selectedOperator) {
+          <as-split-area>
             @if (selectedOperator.type === "throttle") {
               <div style="width: 100%">
                 <div>Throttle Options</div>
@@ -159,7 +170,7 @@
                 <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
               </div>
             } @else if (selectedOperator.type === "filter" || selectedOperator.type === "map") {
-              <div class="option-box" style="width: 100%; height: 100%;">
+              <div class="option-box" style="width: 100%; height: 100%">
                 <div class="header">Filter function</div>
                 <ng-monaco
                   style="width: 100%"
@@ -177,12 +188,10 @@
               </div>
             }
           </as-split-area>
+        }
 
-          }
-
-          @if (selectedTap) {
-            <as-split-area>
-
+        @if (selectedTap) {
+          <as-split-area>
             <div class="option-box" style="min-width: 200px">
               <div class="header">Selected Tap</div>
               <div>
@@ -190,8 +199,7 @@
               </div>
             </div>
           </as-split-area>
-
-          }
+        }
 
         <as-split-area>
           <div class="option-box">

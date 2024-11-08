@@ -32,7 +32,6 @@ export interface EmitterDescription {
   providedIn: 'root',
 })
 export class StreamVizService {
-
   public types: string = '';
   operators: WritableSignal<OperatorDescription[]> = signal([
     { implementation: CombineLatestOperator, name: 'combineLatest' },
@@ -56,6 +55,10 @@ export class StreamVizService {
 
   addEmitter(description: EmitterDescription) {
     this.emitters.update((x) => [...x, description]);
+  }
+
+  removeEmitterDescription(description: EmitterDescription) {
+    this.emitters.update((x) => x.filter((e) => e !== description));
   }
 
   addTypes(types: string) {

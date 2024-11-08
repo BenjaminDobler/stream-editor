@@ -16,10 +16,9 @@ export class TakeOperator extends Operator {
   }
 
   reset() {
-    this.value1 = this.value1;
-    this.count.update(()=>0);
+    this.value1 = this.value1; // to reset
+    this.count.update(() => 0);
   }
-
 
   init() {
     this.value1 = 5;
@@ -45,12 +44,17 @@ export class TakeOperator extends Operator {
         this.inputEmitterObservables[e.id] = {
           source,
           observable: this.value1$.pipe(
+            tap(() => {
+              this.completed.update((x) => false);
+              this.app.updateOperatorInputs();
+            }),
             switchMap((t) =>
               source.asObservable().pipe(
                 take(t),
                 tap({
                   complete: () => {
                     this.completed.update((x) => true);
+                    this.app.updateOperatorInputs();
                   },
                 }),
               ),

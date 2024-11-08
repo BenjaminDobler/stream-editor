@@ -45,7 +45,7 @@ export class CombineLatestOperator extends Operator {
 
     if (this.combineEmitter) {
       this.combineEmitter.x.update(() => this.x() + this.width() + 5);
-      this.combineEmitter.y.update(() => this.y() + this.height() / 2 - 10);
+      this.combineEmitter.y.update(() => this.y() + this.height() / 2);
     }
 
     let hasNewEmitters = false;

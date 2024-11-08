@@ -32,7 +32,7 @@ export class OperatorComponent {
     return this.operator().type === 'takeuntiltarget' || this.operator().type === 'switchMapToTarget';
   }
   @HostBinding('style.background') get background() {
-    return (this.operator() as any)?.triggered ? '#ff0000' : 'var(--operator-bg)';
+    return (this.operator() as any)?.triggered ? '#298715' : 'var(--operator-bg)';
   }
   @HostBinding('style.transform') get transform() {
     return 'translate(' + this.operator()?.x() + 'px,' + this.operator()?.y() + 'px)';

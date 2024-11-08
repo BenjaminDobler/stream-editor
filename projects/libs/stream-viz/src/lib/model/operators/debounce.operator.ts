@@ -1,10 +1,4 @@
-import {
-  BehaviorSubject,
-  debounceTime,
-  Subject,
-  switchMap,
-  throttleTime,
-} from 'rxjs';
+import { BehaviorSubject, debounceTime, Subject, switchMap, throttleTime } from 'rxjs';
 import { Emitter } from '../emitter/emitter';
 import { Operator } from './base.operator';
 import { ObservableEmitter } from '../emitter/observable.emitter';
@@ -19,8 +13,7 @@ export class DebounceOperator extends Operator {
     return `debounceTime(${this.value1})`;
   }
 
-  reset() {
-  }
+  reset() {}
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -43,15 +36,13 @@ export class DebounceOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width()+2);
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
         emitter.width = 10;
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
           source,
-          observable: this.value1$.pipe(
-            switchMap((t) => source.asObservable().pipe(debounceTime(t))),
-          ),
+          observable: this.value1$.pipe(switchMap((t) => source.asObservable().pipe(debounceTime(t)))),
           emitter: emitter,
           sourceEmitter: e,
         };
@@ -59,15 +50,11 @@ export class DebounceOperator extends Operator {
       }
     });
 
-    const toRemove = Object.keys(this.inputEmitterObservables).filter(
-      (k) => !e.find((em) => em.id === +k),
-    );
+    const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 
     toRemove.forEach((k) => {
       const val = this.inputEmitterObservables[k];
-      this.app.emitters.update((emitters) =>
-        emitters.filter((e) => e !== val.emitter),
-      );
+      this.app.emitters.update((emitters) => emitters.filter((e) => e !== val.emitter));
       this.inputEmitterObservables[k].emitter.destroy();
       delete this.inputEmitterObservables[k];
     });
@@ -78,7 +65,7 @@ export class DebounceOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x() + this.width()+2);
+        inp.emitter.x.update(() => this.x() + this.width() + 2);
         inp.emitter.y.update(() => inp.sourceEmitter.y());
       }
     });

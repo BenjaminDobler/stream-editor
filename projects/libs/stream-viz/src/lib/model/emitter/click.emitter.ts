@@ -13,8 +13,8 @@ export class ClickEmitter extends Emitter {
   override activate(obs?: Observable<any>): void {
     if (this.hot()) {
       const item = new Item();
-      item.x.update(()=>this.x() + this.width);
-      item.y.update(() => this.y() + 10);
+      item.x.update(() => this.x() + this.width);
+      item.y.update(() => this.y());
       item.colors = [this.color];
       item.value = this.count;
       if (this.onItem) {

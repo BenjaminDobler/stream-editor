@@ -16,8 +16,7 @@ export class SwitchMapToOperator extends Operator {
   combineSubscription?: Subscription;
   combineOutput: Subject<any> = new Subject<any>();
 
-  reset() {
-  }
+  reset() {}
   getCode() {
     if (this.targetOperator) {
       const line = this.app.getLineWithOperator(this.targetOperator);
@@ -46,12 +45,12 @@ export class SwitchMapToOperator extends Operator {
     target.height.update(() => 20);
 
     mousedown$.pipe(take(1)).subscribe((e) => {
-      target.x.update((x) => (e.clientX - stageRect.x) - target.width()/2);
-      target.y.update((y) => (e.clientY - stageRect.y)- target.height()/2);
+      target.x.update((x) => e.clientX - stageRect.x - target.width() / 2);
+      target.y.update((y) => e.clientY - stageRect.y - target.height() / 2);
     });
     mousemove$.pipe(takeUntil(mousedown$)).subscribe((e) => {
-      target.x.update((x) => (e.clientX - stageRect.x) - target.width()/2);
-      target.y.update((y) => (e.clientY - stageRect.y)- target.height()/2);
+      target.x.update((x) => e.clientX - stageRect.x - target.width() / 2);
+      target.y.update((y) => e.clientY - stageRect.y - target.height() / 2);
     });
   }
   override init(): void {
@@ -82,7 +81,7 @@ export class SwitchMapToOperator extends Operator {
       emitter.belongsToOperator = this;
 
       emitter.x.update(() => this.x() + this.width() + 2);
-      emitter.y.update(() => this.y() + this.height() / 2 - 10);
+      emitter.y.update(() => this.y() + this.height() / 2);
       emitter.width = 10;
       this.app.addEmitter(emitter);
       this.combineEmitter = emitter;
@@ -92,7 +91,7 @@ export class SwitchMapToOperator extends Operator {
 
     if (this.combineEmitter) {
       this.combineEmitter.x.update(() => this.x() + this.width() + 2);
-      this.combineEmitter.y.update(() => this.y() + this.height() / 2 - 10);
+      this.combineEmitter.y.update(() => this.y() + this.height() / 2);
     }
   }
 }

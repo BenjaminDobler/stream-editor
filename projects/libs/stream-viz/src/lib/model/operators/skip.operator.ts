@@ -19,8 +19,7 @@ export class SkipOperator extends Operator {
 
   init() {}
 
-  reset() {
-  }
+  reset() {}
 
   //input emitters
   setInputEmitters(e: Emitter[]) {
@@ -35,7 +34,7 @@ export class SkipOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width()+2);
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
         emitter.width = 10;
         this.app.addEmitter(emitter);

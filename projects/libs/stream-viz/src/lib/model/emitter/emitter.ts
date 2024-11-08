@@ -4,14 +4,7 @@ import { Operator } from '../operators/base.operator';
 import { signal, WritableSignal } from '@angular/core';
 import { IDGenerator } from '../../it.generator';
 
-function getRandomColor() {
-  var symbols = '0123456789ABCDEF';
-  let color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += symbols[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+
 
 export abstract class Emitter {
   public operator?: Operator;
@@ -20,8 +13,9 @@ export abstract class Emitter {
   y: WritableSignal<number> = signal(0);
   x: WritableSignal<number> = signal(0);
   width = 90;
+  height = 20;
   destroyed$: Subject<void> = new Subject<void>();
-  color = getRandomColor();
+  color = '#000000'; // getRandomColor();
   isStartEmitter?: boolean;
   public id: number = IDGenerator.getID();
   public type: string = '';

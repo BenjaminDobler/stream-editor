@@ -5,6 +5,8 @@ import {
   ElementRef,
   EnvironmentInjector,
   inject,
+  Input,
+  input,
   output,
   signal,
   viewChild,
@@ -42,6 +44,7 @@ import { AngularSplitModule } from 'angular-split';
 import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geometry';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { getRandomColor } from './util/color';
 
 @Component({
   selector: 'stream-viz',
@@ -68,6 +71,30 @@ import { InputTextModule } from 'primeng/inputtext';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamVizComponent {
+  rootEmitterStyles = input({ width: 120, height: 30 });
+
+  private _speed = 2;
+  public get speed() {
+    return this._speed;
+  }
+  @Input()
+  public set speed(value) {
+    this._speed = value;
+    this.items().forEach((item) => {
+      item.speed = this._speed;
+    });
+  }
+
+  private _verticalGap = 60;
+  public get verticalGap() {
+    return this._verticalGap;
+  }
+  @Input()
+  public set verticalGap(value) {
+    this._verticalGap = value;
+    this.updateRootEmitterPosition();
+  }
+
   @ViewChild('contextMenu') contextMenu?: ContextMenu;
 
   pixiElement = viewChild<ElementRef>('pixi');
@@ -88,6 +115,7 @@ export class StreamVizComponent {
 
   rightClickEmitter?: Emitter;
   rightClickOperator?: Operator;
+  rightClickEmitterDescription?: EmitterDescription;
 
   backgroundColor: string = '#00ff00';
 
@@ -141,6 +169,18 @@ export class StreamVizComponent {
     },
   ];
 
+  emitterDesctiptionContextMenuItems: MenuItem[] = [
+    {
+      label: 'Delete',
+      icon: 'pi pi-trash',
+      command: (e) => {
+        if (this.rightClickEmitterDescription) {
+          this.removeEmitterDescription(this.rightClickEmitterDescription);
+        }
+      },
+    },
+  ];
+
   obstacleContextMenuItems: MenuItem[] = [
     {
       label: 'Delete',
@@ -179,6 +219,19 @@ export class StreamVizComponent {
     // let model = monaco.editor.createModel("Hello");
     // editor.setModel(model)
   }
+
+  removeEmitterDescription(emitterDesciption: EmitterDescription) {
+    this.streamVizService.removeEmitterDescription(emitterDesciption);
+  }
+
+  onEmitterDescriptionContext(event: any, emitterDescription: EmitterDescription) {
+    this.rightClickEmitterDescription = emitterDescription;
+    if (this.contextMenu) {
+      this.contextMenu.model = this.emitterDesctiptionContextMenuItems;
+      this.contextMenu.target = event.currentTarget;
+      this.contextMenu.show(event);
+    }
+  }
   onEmitterContextMenu(event: any, emitter: Emitter) {
     this.rightClickEmitter = emitter;
     if (this.contextMenu) {
@@ -204,8 +257,7 @@ export class StreamVizComponent {
     this.initPixi();
   }
 
-  onEmitterSelected(e: any) {
-  }
+  onEmitterSelected(e: any) {}
 
   async initPixi() {
     const app = new PIXI.Application();
@@ -268,6 +320,7 @@ export class StreamVizComponent {
   }
 
   updateOperatorInputs() {
+    this.rootEmitters().forEach((e) => (e.width = this.rootEmitterStyles().width));
     this.operators.update((x) =>
       x.sort((a: Operator, b: Operator) => {
         return a.x() - b.x();
@@ -275,7 +328,7 @@ export class StreamVizComponent {
     );
 
     this.emitters().forEach((e) => {
-      const emitterY = e.y() + 10;
+      const emitterY = e.y();
       const emitteroperators = this.operators().filter((o) => {
         const isWithin = emitterY >= o.y() && emitterY <= o.y() + o.height() && e.x() < o.x();
         return isWithin;
@@ -308,8 +361,8 @@ export class StreamVizComponent {
         const dash = e.hot() ? 'none' : '4';
         cons.push({
           id: e.id + '-' + o.id,
-          from: { x: e.x() + e.width + 15, y: e.y() + 10 },
-          to: { x: o.x() - 10, y: e.y() + 10 },
+          from: { x: e.x() + e.width + 15, y: e.y() },
+          to: { x: o.x() - 10, y: e.y() },
           dash,
         });
       });
@@ -372,12 +425,13 @@ export class StreamVizComponent {
     this.emitters()
       .filter((e) => !e.belongsToOperator)
       .forEach((emitter, index) => {
-        emitter.y.update(() => 50 + index * 60);
+        emitter.y.update(() => 50 + index * this.verticalGap);
         emitter.x.update(() => 20);
       });
   }
 
   addEmitterFromDescription(emitterDescription: EmitterDescription) {
+    const index = this.rootEmitters().length;
     if (!emitterDescription) {
       return;
     }
@@ -387,9 +441,11 @@ export class StreamVizComponent {
 
     emitter.type = emitterDescription.name;
     emitter.valueType = emitterDescription.valueType;
+    emitter.width = this.rootEmitterStyles().width;
+    emitter.color = getRandomColor(index);
     emitter.onItem = (item: Item) => {
-      // item.x.update(() => 10);
       item.emitterID = emitter.id;
+      item.speed = this.speed;
       this.addItem(item);
     };
     emitter.isStartEmitter = true;
@@ -524,7 +580,7 @@ export class StreamVizComponent {
       let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeuntil');
       // let hasUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
       let hasSwitchMapTarget = operators.find((o: any) => o.type === 'switchMapToTarget') as SwitchMapToOperatorTarget;
-
+      let completedOperators = !!operators.find((o) => o.completed());
       if (emitters.length === 0) {
         emitters = [emitterToCheck];
       }
@@ -532,10 +588,14 @@ export class StreamVizComponent {
       const hasActiveSwitchMapTarget = hasSwitchMapTarget && hasSwitchMapTarget.isActive;
       // const hasActiveUntilTriggerTarget = hasUntilTriggerTarget && hasUntilTriggerTarget.isActive;
 
-      const isHot =
-        (!untilTriggered && hasActiveSwitchMapTarget) ||
-        (operators.length > 0 && operators[operators.length - 1].type === 'consumer');
-
+      let isHot = false;
+      if (completedOperators) {
+        isHot = false;
+      } else {
+        isHot =
+          (!untilTriggered && hasActiveSwitchMapTarget) ||
+          (operators.length > 0 && operators[operators.length - 1].type === 'consumer');
+      }
       emitterToCheck.isHot.update((s) => isHot);
       emitters.forEach((e) => e.hot.update(() => isHot));
     });
@@ -553,9 +613,7 @@ export class StreamVizComponent {
       this.selectedOperatorDataType =
         this.streamVizService.types +
         `
-
         declare const input:${emitter.valueType};
-      
       `;
     }
   }
@@ -602,6 +660,7 @@ export class StreamVizComponent {
 
     const newItem = {
       name,
+      rootEmitterStyles: this.rootEmitterStyles(),
       content: {
         operators,
         emitters,

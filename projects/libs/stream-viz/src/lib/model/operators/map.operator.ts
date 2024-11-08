@@ -10,8 +10,7 @@ export class MapOperator extends Operator {
   protected override _value1: any = '';
   override width: WritableSignal<number> = signal(60);
 
-  reset() {
-  }
+  reset() {}
 
   impact(item: any) {
     if (this.inputEmitterObservables.hasOwnProperty(item.emitterID)) {
@@ -24,7 +23,7 @@ export class MapOperator extends Operator {
   getCode() {
     return `map(input => {
       return ${this.value1}
-    })`
+    })`;
   }
 
   filterFunction: any;
@@ -42,7 +41,7 @@ export class MapOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source: Subject<Item> = new Subject<Item>();
-        emitter.x.update(() => this.x() + this.width()+2);
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
         emitter.width = 10;
         this.app.addEmitter(emitter);

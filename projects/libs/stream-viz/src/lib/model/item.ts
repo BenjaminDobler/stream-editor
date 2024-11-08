@@ -6,6 +6,7 @@ export class Item {
   y = signal(0);
   width = signal(0);
   height = signal(0);
+  speed = 2;
   id = IDGenerator.getID();
 
   value?: any;
@@ -14,6 +15,6 @@ export class Item {
   colors = ['#00ff00'];
 
   update() {
-    this.x.update((value) => value + 2);
+    this.x.update((value) => value + this.speed);
   }
 }

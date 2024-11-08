@@ -14,11 +14,10 @@ export class PairwiseOperator extends Operator {
 
   init() {}
 
-  reset() {
-  }
+  reset() {}
 
   getCode() {
-    return 'pairwise()'
+    return 'pairwise()';
   }
 
   //input emitters
@@ -32,7 +31,7 @@ export class PairwiseOperator extends Operator {
         emitter.color = e.color;
         emitter.previousEmitter = e;
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width()+2);
+        emitter.x.update(() => this.x() + this.width() + 2);
         emitter.y.update(() => e.y());
         emitter.valueType = `[${e.valueType},${e.valueType}]`;
         emitter.width = 10;
