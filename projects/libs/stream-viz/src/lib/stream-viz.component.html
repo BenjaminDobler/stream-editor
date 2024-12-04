@@ -43,6 +43,8 @@
   <div
     style="padding: 12px; width: 240px; display: flex; /* justify-content: space-around; */ flex-wrap: wrap; gap: 5px"
   >
+  <p-button label="Ser" (onClick)="serializeState2()" />
+
     <p-button severity="secondary" icon="pi pi-save" (click)="saveAsVisible = true" label="Save" />
     <p-button severity="secondary" icon="pi pi-folder-open" (click)="restoreVisible = true" label="Open" />
     <p-button severity="secondary" icon="pi pi-trash" (click)="reset()" label="Reset" />

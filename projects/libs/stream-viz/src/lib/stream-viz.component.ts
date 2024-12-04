@@ -626,6 +626,63 @@ export class StreamVizComponent {
   stored: { name: string; content: any }[] = [];
 
   save(name: string) {
+    const state = this.serializeState();
+    this.stored = this.stored.filter((s) => s.name !== name);
+    const newItem = {
+      name,
+      ...state,
+    };
+    this.stored.push(newItem);
+    this.currentStoredItem = newItem;
+    localStorage.setItem('stored', JSON.stringify(this.stored));
+  }
+
+  serializeState2() {
+    const exportObject: any = {
+      streams: [],
+    };
+
+    const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
+    startEmitters.forEach((e) => {
+      const line = this.getLineFromEmitter(e, false);
+      console.log(line.operators);
+
+      exportObject.streams.push({
+        id: e.id,
+        type: e.type,
+        operators: line.operators
+          .filter((o) => !['switchMapToTarget', 'consumer', 'takeuntiltarget'].includes(o.type))
+          .map((o) => {
+            const operatorObj: any = {
+              type: o.type,
+              id: o.id,
+              property1: o.value1,
+            };
+            if (o.type === 'switchMapTo') {
+              const targetOperator = (o as SwitchMapToOperator).targetOperator;
+              if (targetOperator) {
+                const targetLine = this.getLineWithOperator(targetOperator);
+                const startStreamID = targetLine?.emitters[0].id;
+                operatorObj.property1 = startStreamID;
+              }
+            }
+
+            if (o.type === 'takeuntil') {
+              const targetOperator = (o as TakeUntilOperator).targetOperator;
+              if (targetOperator) {
+                const targetLine = this.getLineWithOperator(targetOperator);
+                const startStreamID = targetLine?.emitters[0].id;
+                operatorObj.property1 = startStreamID;
+              }
+            }
+
+            return operatorObj;
+          }),
+      });
+    });
+    console.log(exportObject);
+  }
+  serializeState() {
     const emitters = this.emitters()
       .filter((e) => e.isStartEmitter)
       .map((e) => {
@@ -657,10 +714,7 @@ export class StreamVizComponent {
       };
     });
 
-    this.stored = this.stored.filter((s) => s.name !== name);
-
-    const newItem = {
-      name,
+    return {
       rootEmitterStyles: this.rootEmitterStyles(),
       content: {
         operators,
@@ -668,10 +722,6 @@ export class StreamVizComponent {
         counters,
       },
     };
-    this.stored.push(newItem);
-    this.currentStoredItem = newItem;
-
-    localStorage.setItem('stored', JSON.stringify(this.stored));
   }
 
   currentStoredItem?: { name: string; content: any };
