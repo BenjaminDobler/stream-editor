@@ -647,7 +647,7 @@ export class StreamVizComponent {
       const line = this.getLineFromEmitter(e, false);
       console.log(line.operators);
 
-      exportObject.streams.push({
+      const stream: any = {
         id: e.id,
         type: e.type,
         operators: line.operators
@@ -678,7 +678,12 @@ export class StreamVizComponent {
 
             return operatorObj;
           }),
-      });
+      };
+      const consumer = line.operators.find((o) => o.type === 'consumer');
+      if (consumer) {
+        stream.output = consumer.value1;
+      }
+      exportObject.streams.push(stream);
     });
     console.log(exportObject);
   }
