@@ -5,7 +5,7 @@ import { Operator } from './base.operator';
 export class ConsumerOperator extends Operator {
   override type = 'consumer';
 
-  protected override _value1: any = 'twin/fx/';
+  protected override _value1: any = 'consumer';
   public override get value1() {
     return this._value1;
   }

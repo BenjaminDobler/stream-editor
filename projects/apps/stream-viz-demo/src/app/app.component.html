@@ -1,14 +1,13 @@
 @if (visible) {
-  <stream-viz [verticalGap]="verticalGap()" [speed]="speed" [rootEmitterStyles]="emitterStyles()">
-    <p-button [style]="{ width: '100%' }" emitter-section severity="secondary" label="Add CSO API" />
+  <stream-viz #streamViz [verticalGap]="verticalGap()" [speed]="speed" [rootEmitterStyles]="emitterStyles()">
 
     <div sidebar-item class="sidebar-section">
       <div></div>
-      <p-button severity="secondary" label="Generate" />
+      <p-button (onClick)="logSerializedState(streamViz.serializeState2())" severity="secondary" label="Generate" />
     </div>
   </stream-viz>
 }
-<div style="height: 150px; background: #000; display: flex; flex-direction: column">
+<!-- <div style="height: 150px; background: #000; display: flex; flex-direction: column">
   <button (click)="visible = !visible">toggle</button>
 
   <div style="height: 20px;">
@@ -24,4 +23,4 @@
   <div style="height: 20px;">
     <p-slider [(ngModel)]="verticalGap" [min]="20" [max]="200" [step]="1" styleClass="w-14rem" />
   </div>
-</div>
+</div> -->
