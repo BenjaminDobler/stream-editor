@@ -640,6 +640,7 @@ export class StreamVizComponent {
   serializeState2() {
     const exportObject: any = {
       streams: [],
+      outputs: [],
     };
 
     const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
@@ -679,12 +680,18 @@ export class StreamVizComponent {
             return operatorObj;
           }),
       };
+
       const consumer = line.operators.find((o) => o.type === 'consumer');
       if (consumer) {
         stream.output = consumer.value1;
+        exportObject.outputs.push({
+          topic: consumer.value1,
+          stream: stream.id,
+        });
       }
       exportObject.streams.push(stream);
     });
+
     console.log(exportObject);
   }
   serializeState() {
