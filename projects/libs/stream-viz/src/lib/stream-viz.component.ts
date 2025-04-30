@@ -257,7 +257,7 @@ export class StreamVizComponent {
     this.initPixi();
   }
 
-  onEmitterSelected(e: any) {}
+  onEmitterSelected(e: any) { }
 
   async initPixi() {
     const app = new PIXI.Application();
@@ -646,7 +646,6 @@ export class StreamVizComponent {
     const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
     startEmitters.forEach((e) => {
       const line = this.getLineFromEmitter(e, false);
-      console.log(line.operators);
 
       const stream: any = {
         id: e.id,
@@ -692,7 +691,7 @@ export class StreamVizComponent {
       exportObject.streams.push(stream);
     });
 
-    console.log(exportObject);
+    return exportObject;
   }
   serializeState() {
     const emitters = this.emitters()
