@@ -3,11 +3,10 @@ import { RouterOutlet } from '@angular/router';
 import { DraggerDirective } from '@richapps/rx-drag';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, DraggerDirective],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+    selector: 'app-root',
+    imports: [RouterOutlet, DraggerDirective],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'drag-demo';

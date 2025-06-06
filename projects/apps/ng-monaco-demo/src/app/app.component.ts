@@ -5,11 +5,10 @@ import { NgMonacoComponent, MonacoService } from "@richapps/ng-monaco";
 import { RXJSLoader } from './rxjs.loader/rxjs.loader';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, NgMonacoComponent, FormsModule],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+    selector: 'app-root',
+    imports: [RouterOutlet, NgMonacoComponent, FormsModule],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'demo';

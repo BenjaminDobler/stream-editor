@@ -1,0 +1,24 @@
+@let e = emitter();
+
+@if (e) {
+  @if (e.isStartEmitter) {
+    <div style="transform: translateY(-50%); width: 100%; height: 100%">
+      <div class="type" [style.lineHeight]="size().height + 'px'">
+        {{ e.type }}
+        @if (e.type === "number") {
+          <input [(ngModel)]="e.property1" style="field-sizing: content; background: transparent; border: none" />
+        }
+      </div>
+      <div class="color-indicator" [style.background]="e.color"></div>
+    </div>
+  } @else {
+    <div style="transform: translateY(-50%); width: 100%; height: 100%" [style.background]="e.color">
+      @if (e.isStartEmitter) {
+        {{ e.type }}
+      }
+      @if (e.type === "interval") {
+        <input [(ngModel)]="e.property1" style="field-sizing: content; background: transparent; border: none" />
+      }
+    </div>
+  }
+}

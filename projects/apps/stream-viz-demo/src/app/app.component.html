@@ -1,12 +1,23 @@
-@if (visible) {
-  <stream-viz #streamViz [verticalGap]="verticalGap()" [speed]="speed" [rootEmitterStyles]="emitterStyles()">
+<button (click)="visible = !visible">Visible</button>
 
+@if (visible) {
+  <stream-viz
+    #streamViz
+    [streamVizService]="streamVizService"
+    (stateBeforeDestroy)="onStateBeforeDestroy($event)"
+    [verticalGap]="verticalGap()"
+    [speed]="speed"
+    [rootEmitterStyles]="emitterStyles()"
+  >
     <div sidebar-item class="sidebar-section">
       <div></div>
+      <button (click)="restore()">Restore</button>
+
       <p-button (onClick)="logSerializedState(streamViz.serializeState2())" severity="secondary" label="Generate" />
     </div>
   </stream-viz>
 }
+
 <!-- <div style="height: 150px; background: #000; display: flex; flex-direction: column">
   <button (click)="visible = !visible">toggle</button>
 

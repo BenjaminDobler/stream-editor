@@ -14,6 +14,9 @@ import { TakeOperator } from '../model/operators/take.operator';
 import { FilterOperator } from '../model/operators/filter.operator';
 import { PairwiseOperator } from '../model/operators/pairwise.operator';
 import { MapOperator } from '../model/operators/map.operator';
+import { ScanOperator } from '../model/operators/scan.operator';
+import { NumberEmitter } from '../model/emitter/number.emitter';
+import { DistinctUntilChangedOperator } from '../model/operators/distinctUntilChanged';
 
 export interface OperatorDescription {
   implementation: any;
@@ -28,9 +31,6 @@ export interface EmitterDescription {
   metadata?: string;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
 export class StreamVizService {
   public types: string = '';
   operators: WritableSignal<OperatorDescription[]> = signal([
@@ -42,15 +42,19 @@ export class StreamVizService {
     { implementation: TakeUntilOperator, name: 'takeUntil' },
     { implementation: SwitchMapToOperator, name: 'switchMapTo' },
     { implementation: FilterOperator, name: 'filter' },
+    { implementation: ScanOperator, name: 'scan' },
     { implementation: TakeOperator, name: 'take' },
     { implementation: PairwiseOperator, name: 'pairwise' },
     { implementation: MapOperator, name: 'map' },
     { implementation: ConsumerOperator, name: 'consumer' },
+    { implementation: DistinctUntilChangedOperator, name: 'distinctUntilChanged' },
+
   ]);
 
   emitters: WritableSignal<EmitterDescription[]> = signal([
     { implementation: ClickEmitter, name: 'click', valueType: 'number' },
     { implementation: IntervalEmitter, name: 'interval', valueType: 'number' },
+    { implementation: NumberEmitter, name: 'number', valueType: 'number' },
   ]);
 
   addEmitter(description: EmitterDescription) {

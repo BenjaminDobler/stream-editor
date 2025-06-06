@@ -1,0 +1,39 @@
+:host {
+  display: flex;
+  align-items: center;
+  z-index: 999;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  position: absolute;
+  border-bottom-right-radius: 3px;
+  border-top-right-radius: 3px;
+
+  .color-indicator {
+    position: absolute;
+    right: 0;
+    width: 10px;
+    top: 0;
+    bottom: 0;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+  .type {
+    position: absolute;
+    background: var(--emitter-bg);
+    border-bottom-left-radius: 3px;
+    border-top-left-radius: 3px;
+    left: 0;
+    right: 10px;
+    top: 0;
+    bottom: 0;
+    padding-left: 5px;
+    text-overflow: ellipsis;
+    line-height: 20px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    font-size: 14px;
+  }
+}

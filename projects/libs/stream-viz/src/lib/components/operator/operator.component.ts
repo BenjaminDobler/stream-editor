@@ -6,19 +6,18 @@ import { FormsModule } from '@angular/forms';
 import { ContextMenuModule } from 'primeng/contextmenu';
 
 @Component({
-  selector: 'operator',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './operator.component.html',
-  styleUrl: './operator.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [
-    {
-      directive: DraggerDirective,
-      outputs: ['heightUpdated', 'widthUpdated', 'positionUpdated'],
-      inputs: ['positioning'],
-    },
-  ],
+    selector: 'operator',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './operator.component.html',
+    styleUrl: './operator.component.scss',
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    hostDirectives: [
+        {
+            directive: DraggerDirective,
+            outputs: ['heightUpdated', 'widthUpdated', 'positionUpdated'],
+            inputs: ['positioning'],
+        },
+    ]
 })
 export class OperatorComponent {
   @HostBinding('style.width') get width() {

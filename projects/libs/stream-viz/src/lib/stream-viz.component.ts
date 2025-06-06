@@ -31,7 +31,7 @@ import { EmitterDescription, OperatorDescription, StreamVizService } from './ser
 import { TakeUntilOperator } from './model/operators/takeuntil.operator';
 import { TakeUntilOperatorTarget } from './model/operators/takeuntil-target.operator';
 import { SwitchMapToOperator } from './model/operators/switchMapTo.operator';
-import { fromEvent, take, takeUntil } from 'rxjs';
+import { fromEvent, Subject, take, takeUntil } from 'rxjs';
 import { SwitchMapToOperatorTarget } from './model/operators/switchMapToTarget.operator';
 import { SignalObject } from './model/types';
 import { Tap } from './model/tap';
@@ -45,33 +45,38 @@ import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geome
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { getRandomColor } from './util/color';
-
+import { ListboxModule } from 'primeng/listbox';
+import { EmitterComponent } from './components/emitter/emitter.component';
 @Component({
   selector: 'stream-viz',
-  standalone: true,
   imports: [
-    RouterOutlet,
     FormsModule,
     DraggerDirective,
     ContextMenuModule,
     DropdownModule,
     ConnectionsComponent,
     OperatorComponent,
-    SplitterComponent,
-    JsonPipe,
     NgMonacoComponent,
+    JsonPipe,
     AngularSplitModule,
     DialogModule,
     ButtonModule,
     InputTextModule,
+    ListboxModule,
+    EmitterComponent
   ],
-  providers: [StreamVizComponent],
+  providers: [],
   templateUrl: './stream-viz.component.html',
   styleUrl: './stream-viz.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StreamVizComponent {
+  stateBeforeDestroy = output<any>();
   rootEmitterStyles = input({ width: 120, height: 30 });
+
+  onDestroy$ = new Subject<void>();
+
+  streamsToExport = [];
 
   private _speed = 2;
   public get speed() {
@@ -108,7 +113,7 @@ export class StreamVizComponent {
   consumersChanged = output<Operator[]>();
   usedOperators = output<string[]>();
 
-  public streamVizService: StreamVizService = inject(StreamVizService);
+  public streamVizService = input.required<StreamVizService>();
 
   counters: WritableSignal<Counter[]> = signal<Counter[]>([]);
   taps: WritableSignal<Tap[]> = signal<Tap[]>([]);
@@ -128,13 +133,15 @@ export class StreamVizComponent {
   saveAsVisible = false;
   restoreVisible = false;
   importVisible = false;
+  exportVisible = false;
 
   constructor(private injector: EnvironmentInjector) {
+    console.log('$$ stream viz constructor');
     const storedString = localStorage.getItem('stored');
     if (storedString) {
-      this.stored = JSON.parse(storedString);
+      this.stored.update(() => JSON.parse(storedString));
     } else {
-      this.stored = [];
+      this.stored.update(() => []);
     }
   }
 
@@ -221,7 +228,7 @@ export class StreamVizComponent {
   }
 
   removeEmitterDescription(emitterDesciption: EmitterDescription) {
-    this.streamVizService.removeEmitterDescription(emitterDesciption);
+    this.streamVizService().removeEmitterDescription(emitterDesciption);
   }
 
   onEmitterDescriptionContext(event: any, emitterDescription: EmitterDescription) {
@@ -257,7 +264,7 @@ export class StreamVizComponent {
     this.initPixi();
   }
 
-  onEmitterSelected(e: any) { }
+  onEmitterSelected(e: any) {}
 
   async initPixi() {
     const app = new PIXI.Application();
@@ -468,7 +475,7 @@ export class StreamVizComponent {
   addOperator(operatorDescription: OperatorDescription, event?: MouseEvent) {
     const o = new operatorDescription.implementation(this, this.injector) as Operator;
     // TODO: unsubscribe when deleted
-    o.emit$.subscribe((item: Item) => {
+    o.emit$.pipe(takeUntil(this.onDestroy$)).subscribe((item: Item) => {
       this.items.update((items) => [...items, item]);
     });
 
@@ -612,10 +619,28 @@ export class StreamVizComponent {
     const emitter = this.emitters().find((e) => e.operator === operator);
     if (emitter?.valueType) {
       this.selectedOperatorDataType =
-        this.streamVizService.types +
+        this.streamVizService().types +
         `
         declare const input:${emitter.valueType};
+
       `;
+
+      if (this.selectedOperator.type === 'scan') {
+        this.selectedOperatorDataType += `
+        declare const curr:${emitter.valueType};
+        declare const acc:any;
+        declare const index:number;
+        `;
+      } else if (this.selectedOperator.type === 'distinctUntilChanged') {
+        this.selectedOperatorDataType += `
+        declare const prev:${emitter.valueType};
+        declare const curr:${emitter.valueType};
+        `;
+      } else {
+        this.selectedOperatorDataType += `
+        declare const input:${emitter.valueType};
+        `;
+      }
     }
   }
 
@@ -623,18 +648,23 @@ export class StreamVizComponent {
     this.selectedTap = tap;
   }
 
-  stored: { name: string; content: any }[] = [];
+  stored: WritableSignal<{ name: string; content: any }[]> = signal([]);
 
   save(name: string) {
     const state = this.serializeState();
-    this.stored = this.stored.filter((s) => s.name !== name);
+    this.stored.update((s) => s.filter((s) => s.name !== name));
+    
     const newItem = {
       name,
       ...state,
     };
-    this.stored.push(newItem);
+    this.stored.update((stored) => [...stored, newItem]);
     this.currentStoredItem = newItem;
-    localStorage.setItem('stored', JSON.stringify(this.stored));
+    this.saveStored();
+  }
+
+  saveStored() {
+    localStorage.setItem('stored', JSON.stringify(this.stored()));
   }
 
   serializeState2() {
@@ -741,22 +771,30 @@ export class StreamVizComponent {
     this.reset();
     const stored = storedData.content;
 
+    console.log('stored', stored);
     stored.emitters.forEach((e: any) => {
-      const emitterDescription = this.streamVizService.emitters().find((d) => d.name === e.type);
+      const emitterDescription = this.streamVizService()
+        .emitters()
+        .find((d) => d.name === e.type);
       if (emitterDescription) {
+        console.log('emitter found', e.type);
         const emitter = this.addEmitterFromDescription(emitterDescription);
         if (emitter) {
           emitter.id = e.id;
         }
+      } else {
+        console.log('emitter not found', e.type);
       }
     });
 
     const operatorsWithoutDescription = stored.operators.filter((o: any) =>
-      this.streamVizService.operators().find((d) => d.name === o.type),
+      this.streamVizService()
+        .operators()
+        .find((d) => d.name === o.type),
     );
 
     stored.operators.forEach((o: any) => {
-      const operatorDescription = this.streamVizService
+      const operatorDescription = this.streamVizService()
         .operators()
         .find((d) => d.name.toLowerCase() === o.type.toLowerCase());
       if (operatorDescription) {
@@ -791,6 +829,8 @@ export class StreamVizComponent {
           targetOperator.width.update(() => storedOp.width);
           targetOperator.height.update(() => storedOp.height);
         }
+      } else {
+        console.log('operator not found', o.type);
       }
     });
 
@@ -890,5 +930,63 @@ export class StreamVizComponent {
     this.rootEmittersChanged.emit(this.rootEmitters());
     this.codeChanged.emit(code);
     this.generatedCode = code;
+  }
+
+  ngOnInit() {
+    console.log('$$ on init stream viz');
+  }
+
+  ngOnDestroy() {
+    const state = this.serializeState();
+    this.stateBeforeDestroy.emit(state);
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
+    console.log('$$ destroying stream viz');
+  }
+
+  async exportStreams() {
+    console.log('export streams');
+    console.log(this.streamsToExport);
+
+    const handle = await showSaveFilePicker({
+      suggestedName: 'twinfx_streams.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    });
+    const writable = await handle.createWritable();
+    const json = JSON.stringify(this.streamsToExport, null, 2);
+    await writable.write(json);
+    await writable.close();
+  }
+
+  async importStreams() {
+    console.log('import streams');
+    const handle = await showOpenFilePicker({
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
+    });
+    const fileHandle = handle[0];
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    console.log('imported text', text);
+
+    const toImport = JSON.parse(text);
+    console.log('imported json', toImport);
+
+    toImport.forEach((streamToImport: any) => {
+      console.log('import', streamToImport);
+      const exists = this.stored().find((s) => s.name === streamToImport.name);
+      if (!exists) {
+        this.stored.update((stored) => [...stored, streamToImport]);
+      } else {
+        console.log('already exists', streamToImport.name);
+      }
+    });
+
+    this.saveStored();
+
+    // this.importStream(text);
+  }
+
+  onSelect(d: any) {
+    this.restore(d.option);
   }
 }

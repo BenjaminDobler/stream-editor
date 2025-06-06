@@ -2,11 +2,10 @@ import { Component, effect, ElementRef, inject, input, output, viewChild } from 
 import { MonacoAPI, MonacoService } from './services/monaco.service';
 
 @Component({
-  selector: 'ng-monaco',
-  standalone: true,
-  imports: [],
-  template: ` <div class="editor-container" #editor></div> `,
-  styleUrls: ['./ng-monaco.component.scss'],
+    selector: 'ng-monaco',
+    imports: [],
+    template: ` <div class="editor-container" #editor></div> `,
+    styleUrls: ['./ng-monaco.component.scss']
 })
 export class NgMonacoComponent {
   monacoService: MonacoService = inject(MonacoService);

@@ -2,11 +2,14 @@
   <div class="sidebar-section">
     <div class="sidebar-header">Operators</div>
     <div class="operator-box">
-      @for (operator of streamVizService.operators(); track operator.name) {
-      <div class="operator" style="width: 105px; height: 30px; position: relative"
-        (mousedown)="addOperator(operator, $event)">
-        {{ operator.name }}
-      </div>
+      @for (operator of streamVizService().operators(); track operator.name) {
+        <div
+          class="operator"
+          style="width: 105px; height: 30px; position: relative"
+          (mousedown)="addOperator(operator, $event)"
+        >
+          {{ operator.name }}
+        </div>
       }
     </div>
   </div>
@@ -14,11 +17,14 @@
   <div class="sidebar-section">
     <div class="sidebar-header">Emitter</div>
 
-    @for (emitterDescription of streamVizService.emitters(); track emitterDescription) {
-    <div (contextmenu)="onEmitterDescriptionContext($event, emitterDescription)" class="emitter-button"
-      (click)="addEmitterFromDescription(emitterDescription)">
-      {{ emitterDescription.name }}
-    </div>
+    @for (emitterDescription of streamVizService().emitters(); track emitterDescription) {
+      <div
+        (contextmenu)="onEmitterDescriptionContext($event, emitterDescription)"
+        class="emitter-button"
+        (click)="addEmitterFromDescription(emitterDescription)"
+      >
+        {{ emitterDescription.name }}
+      </div>
     }
     <ng-content select="[emitter-section]"></ng-content>
   </div>
@@ -35,12 +41,13 @@
   <ng-content select="[sidebar-item]"></ng-content>
 
   <div
-    style="padding: 12px; width: 240px; display: flex; /* justify-content: space-around; */ flex-wrap: wrap; gap: 5px">
-
+    style="padding: 12px; width: 240px; display: flex; /* justify-content: space-around; */ flex-wrap: wrap; gap: 5px"
+  >
     <p-button severity="secondary" icon="pi pi-save" (click)="saveAsVisible = true" label="Save" />
     <p-button severity="secondary" icon="pi pi-folder-open" (click)="restoreVisible = true" label="Open" />
+    <p-button severity="secondary" icon="pi pi-file-import" (click)="importStreams()" label="Import" />
+    <p-button severity="secondary" icon="pi pi-file-export" (click)="exportVisible = true" label="Export" />
     <p-button severity="secondary" icon="pi pi-trash" (click)="reset()" label="Reset" />
-    <p-button severity="secondary" icon="pi pi-file-import" (click)="importVisible = true" label="Import" />
   </div>
 </div>
 
@@ -53,62 +60,103 @@
       <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
       <div style="position: absolute; left: 0; top: 0" #pixi></div>
-      @let eStyle = rootEmitterStyles();
 
       @for (emitter of emitters(); track emitter.id) {
-      @if (emitter.isStartEmitter) {
-      <div (contextmenu)="onEmitterContextMenu($event, emitter)"
-        [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-        [style.width]="emitter.width + 'px'" style="color: #fff" class="emitter start"
-        [style.width]="eStyle.width + 'px'" [style.height]="eStyle.height + 'px'" (click)="emitter.activate()">
-        <div style="transform: translateY(-50%); width: 100%; height: 100%">
-          <div class="type" [style.lineHeight]="eStyle.height + 'px'">
-            {{ emitter.type }}
+
+        <emitter [emitter]="emitter" [size]="rootEmitterStyles()"></emitter>
+
+        <!-- @if (emitter.isStartEmitter) {
+          <div
+            (contextmenu)="onEmitterContextMenu($event, emitter)"
+            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
+            [style.width]="emitter.width + 'px'"
+            style="color: #fff"
+            class="emitter start"
+            [style.width]="eStyle.width + 'px'"
+            [style.height]="eStyle.height + 'px'"
+            (click)="emitter.activate()"
+          >
+            <div style="transform: translateY(-50%); width: 100%; height: 100%">
+              <div class="type" [style.lineHeight]="eStyle.height + 'px'">
+                {{ emitter.type }}
+                @if (emitter.type === "number") {
+                  <input
+                    [(ngModel)]="emitter.property1"
+                    style="field-sizing: content; background: transparent; border: none"
+                  />
+                }
+              </div>
+              <div class="color-indicator" [style.background]="emitter.color"></div>
+            </div>
           </div>
-          <div class="color-indicator" [style.background]="emitter.color"></div>
-        </div>
-      </div>
-      } @else {
-      <div (contextmenu)="onEmitterContextMenu($event, emitter)"
-        [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-        [style.width]="emitter.width + 'px'" style="color: #fff" class="emitter" (click)="emitter.activate()">
-        <div style="transform: translateY(-50%); width: 100%; height: 100%" [style.background]="emitter.color">
-          @if (emitter.isStartEmitter) {
-          {{ emitter.type }}
-          }
-          @if (emitter.type === "interval") {
-          <input [(ngModel)]="emitter.property1" style="field-sizing: content; background: transparent; border: none" />
-          }
-        </div>
-      </div>
-      }
+        } @else {
+          <div
+            (contextmenu)="onEmitterContextMenu($event, emitter)"
+            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
+            [style.width]="emitter.width + 'px'"
+            style="color: #fff"
+            class="emitter"
+            (click)="emitter.activate()"
+          >
+            <div style="transform: translateY(-50%); width: 100%; height: 100%" [style.background]="emitter.color">
+              @if (emitter.isStartEmitter) {
+                {{ emitter.type }}
+              }
+              @if (emitter.type === "interval") {
+                <input
+                  [(ngModel)]="emitter.property1"
+                  style="field-sizing: content; background: transparent; border: none"
+                />
+              }
+            </div>
+          </div>
+        } -->
       }
 
       <div style="position: relative">
         @for (counter of counters(); track counter.id) {
-        <div [draggable] [positioning]="'none'" (heightUpdated)="counter.setHeight($event)"
-          (widthUpdated)="counter.setWidth($event)" (positionUpdated)="counter.setPos($event)" class="counter"
-          [style.width]="counter.width() + 'px'" [style.height]="counter.height() + 'px'"
-          [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'">
-          {{ counter.count() }}
-          <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
-        </div>
+          <div
+            [draggable]
+            [positioning]="'none'"
+            (heightUpdated)="counter.setHeight($event)"
+            (widthUpdated)="counter.setWidth($event)"
+            (positionUpdated)="counter.setPos($event)"
+            class="counter"
+            [style.width]="counter.width() + 'px'"
+            [style.height]="counter.height() + 'px'"
+            [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'"
+          >
+            {{ counter.count() }}
+            <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
+          </div>
         }
 
         @for (tap of taps(); track tap.id) {
-        <div (click)="selectTap(tap)" [draggable] [positioning]="'none'" (heightUpdated)="tap.setHeight($event)"
-          (widthUpdated)="tap.setWidth($event)" (positionUpdated)="tap.setPos($event)" class="counter"
-          [style.width]="tap.width() + 'px'" [style.height]="tap.height() + 'px'"
-          [style.transform]="'translate(' + tap.x() + 'px,' + tap.y() + 'px)'">
-          {{ tap.count() }}
-          <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
-        </div>
+          <div
+            (click)="selectTap(tap)"
+            [draggable]
+            [positioning]="'none'"
+            (heightUpdated)="tap.setHeight($event)"
+            (widthUpdated)="tap.setWidth($event)"
+            (positionUpdated)="tap.setPos($event)"
+            class="counter"
+            [style.width]="tap.width() + 'px'"
+            [style.height]="tap.height() + 'px'"
+            [style.transform]="'translate(' + tap.x() + 'px,' + tap.y() + 'px)'"
+          >
+            {{ tap.count() }}
+            <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
+          </div>
         }
 
         @for (operator of operators(); track operator.id) {
-        <operator [operator]="operator" (click)="selectOperator(operator)"
-          (contextmenu)="onObstacleContextMenu($event, operator)" [class.isConsumer]="operator.type === 'consumer'"
-          [class.completed]="operator.completed()"></operator>
+          <operator
+            [operator]="operator"
+            (click)="selectOperator(operator)"
+            (contextmenu)="onObstacleContextMenu($event, operator)"
+            [class.isConsumer]="operator.type === 'consumer'"
+            [class.completed]="operator.completed()"
+          ></operator>
         }
 
         <connections [connections]="targetConnections()"></connections>
@@ -123,39 +171,48 @@
         </div>
 
         @if (selectedOperator) {
-        <as-split-area>
-          @if (selectedOperator.type === "throttle") {
-          <div style="width: 100%">
-            <div>Throttle Options</div>
+          <as-split-area>
+            @if (selectedOperator.type === "throttle") {
+              <div style="width: 100%">
+                <div>Throttle Options</div>
 
-            <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
-          </div>
-          } @else if (selectedOperator.type === "filter" || selectedOperator.type === "map") {
-          <div class="option-box" style="width: 100%; height: 100%">
-            <div class="header">Filter function</div>
-            <ng-monaco style="width: 100%" [declarations]="selectedOperatorDataType" [code]="selectedOperator.value1"
-              (codeChanged)="selectedOperator.value1 = $event"></ng-monaco>
-          </div>
-          } @else {
-          <div class="option-box" style="width: 100%">
-            <div class="header">Operator Options</div>
-            <div style="padding: 5px">
-              <input type="text" [(ngModel)]="selectedOperator.value1" />
-            </div>
-          </div>
-          }
-        </as-split-area>
+                <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
+              </div>
+            } @else if (
+              selectedOperator.type === "filter" ||
+              selectedOperator.type === "map" ||
+              selectedOperator.type === "scan" ||
+              selectedOperator.type === "distinctUntilChanged"
+            ) {
+              <div class="option-box" style="width: 100%; height: 100%">
+                <div class="header">Filter function</div>
+                <ng-monaco
+                  style="width: 100%"
+                  [declarations]="selectedOperatorDataType"
+                  [code]="selectedOperator.value1"
+                  (codeChanged)="selectedOperator.value1 = $event"
+                ></ng-monaco>
+              </div>
+            } @else {
+              <div class="option-box" style="width: 100%">
+                <div class="header">Operator Options</div>
+                <div style="padding: 5px">
+                  <input type="text" [(ngModel)]="selectedOperator.value1" />
+                </div>
+              </div>
+            }
+          </as-split-area>
         }
 
         @if (selectedTap) {
-        <as-split-area>
-          <div class="option-box" style="min-width: 200px">
-            <div class="header">Selected Tap</div>
-            <div>
-              {{ selectedTap.currentItem()?.value | json }}
+          <as-split-area>
+            <div class="option-box" style="min-width: 200px">
+              <div class="header">Selected Tap</div>
+              <div>
+                {{ selectedTap.currentItem()?.value | json }}
+              </div>
             </div>
-          </div>
-        </as-split-area>
+          </as-split-area>
         }
 
         <as-split-area>
@@ -165,7 +222,8 @@
               <pre style="color: #dedede">
 
         {{ generatedCode }}
-      </pre>
+      </pre
+              >
             </div>
           </div>
         </as-split-area>
@@ -181,31 +239,53 @@
     <label for="username" class="font-semibold w-6rem">Sabe As</label>
     <input #saveAsName pInputText id="username" class="flex-auto" autocomplete="off" />
   </div>
-  <div class="flex justify-content-end gap-2">
-    <p-button label="Cancel" severity="secondary" (onClick)="saveAsVisible = false" />
-    <p-button label="Save" (onClick)="save(saveAsName.value); saveAsVisible = false" />
+  <div style="display: flex; margin-top: 10px; justify-content: end">
+    <p-button label="Cancel" size="small" severity="secondary" (onClick)="saveAsVisible = false" />
+    <p-button label="Save" size="small" (onClick)="save(saveAsName.value); saveAsVisible = false" />
   </div>
 </p-dialog>
 
 <p-dialog header="Load Stream" [modal]="true" [(visible)]="restoreVisible" [style]="{ width: '25rem' }">
-  <div class="flex gap-3 mb-3" style="flex-direction: column">
-    @for (s of stored; track s.name) {
-    <div (click)="restore(s); restoreVisible = false">
-      {{ s.name }}
-    </div>
-    }
-  </div>
-  <div class="flex justify-content-end gap-2">
+  <p-list-box
+    [options]="stored()"
+    optionLabel="name"
+    (onClick)="restore($event.option); restoreVisible = false"
+  ></p-list-box>
+  <div style="display: flex; margin-top: 10px; justify-content: end">
     <p-button label="Cancel" severity="secondary" (onClick)="restoreVisible = false" />
   </div>
 </p-dialog>
 
-<p-dialog header="Import" [modal]="true" [(visible)]="importVisible" [style]="{ width: '25rem' }">
+<!-- <p-dialog header="Import" [modal]="true" [(visible)]="importVisible" [style]="{ width: '25rem' }">
   <div class="flex align-items-center gap-3 mb-3">
     <textarea #importtext></textarea>
   </div>
   <div class="flex justify-content-end gap-2">
     <p-button label="Cancel" severity="secondary" (onClick)="importVisible = false" />
     <p-button label="Import" (onClick)="importStream(importtext.value); importVisible = false" />
+  </div>
+</p-dialog> -->
+
+<p-dialog header="Export Streams" [modal]="true" [(visible)]="exportVisible" [style]="{ width: '25rem' }">
+  <div class="flex gap-3 mb-3" style="flex-direction: column">
+    <p-listbox
+      [(ngModel)]="streamsToExport"
+      [showToggleAll]="false"
+      [options]="stored()"
+      [multiple]="true"
+      [checkbox]="true"
+      optionLabel="name"
+      class="w-full md:w-56"
+    />
+  </div>
+  <div style="display: flex; margin-top: 10px; justify-content: end">
+    <p-button label="Cancel" size="small" severity="secondary" (onClick)="exportVisible = false" />
+    <p-button
+      label="Export"
+      size="small"
+      [disabled]="stored().length === 0"
+      severity="primary"
+      (onClick)="exportStreams(); exportVisible = false"
+    />
   </div>
 </p-dialog>
