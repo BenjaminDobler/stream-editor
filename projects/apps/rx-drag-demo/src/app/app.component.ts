@@ -4,7 +4,7 @@ import { DraggerDirective } from '@richapps/rx-drag';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterOutlet, DraggerDirective],
+    imports: [DraggerDirective],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })

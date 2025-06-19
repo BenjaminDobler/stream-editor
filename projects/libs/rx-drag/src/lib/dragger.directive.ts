@@ -1,5 +1,6 @@
 import { Directive, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
 import { makeDraggable } from './drag.util';
+import { Subject, takeUntil } from 'rxjs';
 
 @Directive({
   selector: '[draggable]',
@@ -29,27 +30,31 @@ export class DraggerDirective {
   @Output()
   heightUpdated: EventEmitter<number> = new EventEmitter<number>();
 
+  onDestroy$ = new Subject<void>();
+
   public resizeOffset = 5;
 
   ngAfterViewInit() {
     const itemElement = this.el?.nativeElement;
     const parentElement = itemElement.parentElement;
+    console.log('DraggerDirective', itemElement, parentElement);
+
     let parentRect = parentElement.getBoundingClientRect();
     let itemRect = itemElement.getBoundingClientRect();
 
     const setWidth = (width: number) => {
-      this.positioning !== 'none' && (itemElement.style.width = width + 'px');
+      this.positioning !== 'none' && (itemElement.style.width = `${width}px`);
       this.widthUpdated.emit(width);
     };
     const setHeight = (height: number) => {
-      this.positioning !== 'none' && (itemElement.style.height = height + 'px');
+      this.positioning !== 'none' && (itemElement.style.height = `${height}px`);
       this.heightUpdated.emit(height);
     };
 
     const pos = (x: number, y: number) => {
       if (this.positioning === 'absolute') {
-        itemElement.style.left = x + 'px';
-        itemElement.style.top = y + 'px';
+        itemElement.style.left = `${x}px`;
+        itemElement.style.top = `${y}px`;
       } else if (this.positioning === 'transform') {
         itemElement.style.transform = `translate(${x}px, ${y}px)`;
       }
@@ -59,11 +64,11 @@ export class DraggerDirective {
 
     const drag = makeDraggable(itemElement);
 
-    drag.dragStart$.subscribe(() => {
+    drag.dragStart$.pipe(takeUntil(this.onDestroy$)).subscribe(() => {
       itemRect = itemElement.getBoundingClientRect();
       parentRect = parentElement.getBoundingClientRect();
     });
-    drag.dragMove$.subscribe((move) => {
+    drag.dragMove$.pipe(takeUntil(this.onDestroy$)).subscribe((move) => {
       this.resizeOffset = this.resizable ? this.resizeOffset : 0;
 
       const isBottomHeightDrag = move.startOffsetY > itemRect.height - this.resizeOffset;
@@ -109,8 +114,13 @@ export class DraggerDirective {
       }
     });
 
-    drag.dragStart$.subscribe(() => {
+    drag.dragStart$.pipe(takeUntil(this.onDestroy$)).subscribe(() => {
       // console.log('drag start');
     });
+  }
+
+  ngDestroy() {
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
   }
 }

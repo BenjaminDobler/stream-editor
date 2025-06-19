@@ -8,7 +8,8 @@
     "ng-monaco:build": "ng build ng-monaco && node --import=tsx ./scripts/link.ts --project=ng-monaco",
     "rx-drag:build": "ng build rx-drag && node --import=tsx ./scripts/link.ts --project=rx-drag",
     "start": "ng serve stream-viz-demo",
-    "stream-viz:build": "ng build stream-viz && node --import=tsx ./scripts/link.ts --project=stream-viz"
+    "stream-viz:build": "ng build stream-viz && node --import=tsx ./scripts/link.ts --project=stream-viz",
+    "build:prod": "ng build stream-viz-demo --configuration production --base-href=/stream-editor/"
   },
   "dependencies": {
     "@angular/animations": "^19.2.8",

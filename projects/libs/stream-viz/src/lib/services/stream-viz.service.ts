@@ -57,7 +57,7 @@ export class StreamVizService {
     { implementation: NumberEmitter, name: 'number', valueType: 'number' },
   ]);
 
-  addEmitter(description: EmitterDescription) {
+  addEmitterDescription(description: EmitterDescription) {
     this.emitters.update((x) => [...x, description]);
   }
 

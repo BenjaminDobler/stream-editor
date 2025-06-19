@@ -14,7 +14,6 @@ import {
   WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterOutlet } from '@angular/router';
 import { Item } from './model/item';
 
 import { DraggerDirective } from '@richapps/rx-drag';
@@ -23,7 +22,6 @@ import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
 import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
-import * as PIXI from 'pixi.js';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 
@@ -47,6 +45,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { getRandomColor } from './util/color';
 import { ListboxModule } from 'primeng/listbox';
 import { EmitterComponent } from './components/emitter/emitter.component';
+import { BubbleRendererComponent } from './components/bubble-renderer/bubble-renderer.component';
 @Component({
   selector: 'stream-viz',
   imports: [
@@ -63,7 +62,8 @@ import { EmitterComponent } from './components/emitter/emitter.component';
     ButtonModule,
     InputTextModule,
     ListboxModule,
-    EmitterComponent
+    EmitterComponent,
+    BubbleRendererComponent,
   ],
   providers: [],
   templateUrl: './stream-viz.component.html',
@@ -145,37 +145,6 @@ export class StreamVizComponent {
     }
   }
 
-  emitterContextMenuItems: MenuItem[] = [
-    {
-      label: 'Delete',
-      icon: 'pi pi-trash',
-      command: (e) => {
-        this.emitters.update((emitters) => emitters.filter((e) => e !== this.rightClickEmitter));
-        this.rightClickEmitter?.destroy();
-        this.updateRootEmitterPosition();
-        this.updateOperatorInputs();
-      },
-    },
-    {
-      label: 'Get Line',
-      icon: 'pi pi-trash',
-      command: (e) => {
-        if (this.rightClickEmitter) {
-          this.getLineFromEmitter(this.rightClickEmitter);
-        }
-      },
-    },
-    {
-      label: 'Reset',
-      icon: 'pi pi-trash',
-      command: (e) => {
-        if (this.rightClickEmitter) {
-          this.resetLine(this.rightClickEmitter);
-        }
-      },
-    },
-  ];
-
   emitterDesctiptionContextMenuItems: MenuItem[] = [
     {
       label: 'Delete',
@@ -218,15 +187,6 @@ export class StreamVizComponent {
 
   operators: WritableSignal<Operator[]> = signal([]);
 
-  itemSpriteMap: Map<any, any> = new Map();
-  app?: PIXI.Application;
-
-  editorInitialized(e: any) {
-    // let monaco = window.monaco;
-    // let model = monaco.editor.createModel("Hello");
-    // editor.setModel(model)
-  }
-
   removeEmitterDescription(emitterDesciption: EmitterDescription) {
     this.streamVizService().removeEmitterDescription(emitterDesciption);
   }
@@ -235,14 +195,6 @@ export class StreamVizComponent {
     this.rightClickEmitterDescription = emitterDescription;
     if (this.contextMenu) {
       this.contextMenu.model = this.emitterDesctiptionContextMenuItems;
-      this.contextMenu.target = event.currentTarget;
-      this.contextMenu.show(event);
-    }
-  }
-  onEmitterContextMenu(event: any, emitter: Emitter) {
-    this.rightClickEmitter = emitter;
-    if (this.contextMenu) {
-      this.contextMenu.model = this.emitterContextMenuItems;
       this.contextMenu.target = event.currentTarget;
       this.contextMenu.show(event);
     }
@@ -261,32 +213,12 @@ export class StreamVizComponent {
   ngAfterViewInit(): void {
     const computedStyles = getComputedStyle(document.body);
     this.backgroundColor = computedStyles.getPropertyValue('--background-color');
-    this.initPixi();
   }
 
   onEmitterSelected(e: any) {}
 
-  async initPixi() {
-    const app = new PIXI.Application();
-    this.app = app;
-    await app.init({ width: 1400, height: 360, background: this.backgroundColor, backgroundAlpha: 0 });
-    this.pixiElement()?.nativeElement.appendChild(app.canvas);
-
-    let elapsed = 0.0;
-    app.ticker.add((ticker) => {
-      // elapsed += ticker.deltaTime;
-      //sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
-      this.checkCollision();
-    });
-  }
-
   checkCollision() {
     this.items().forEach((i) => i.update());
-
-    this.items().forEach((item) => {
-      const sprite = this.itemSpriteMap.get(item);
-      sprite.position.set(item.x(), item.y());
-    });
 
     const isColliding = (o1: SignalObject, o2: SignalObject) => {
       return o1.x() > o2.x() && o1.x() < o2.x() + o2.width() && o1.y() >= o2.y() && o1.y() < o2.y() + o2.height();
@@ -319,12 +251,6 @@ export class StreamVizComponent {
       }
     });
     this.items.update((items) => items.filter((item) => !toRemove.includes(item)));
-
-    toRemove.forEach((item: Item) => {
-      const sprite = this.itemSpriteMap.get(item);
-      this.app?.stage.removeChild(sprite);
-      this.itemSpriteMap.delete(item);
-    });
   }
 
   updateOperatorInputs() {
@@ -408,24 +334,6 @@ export class StreamVizComponent {
   }
 
   addItem(item: Item) {
-    let sprite = new PIXI.Graphics();
-
-    if (item.colors.length === 1) {
-      sprite.circle(0, 0, 10).fill(item.colors[0]);
-    } else {
-      const partHeight = 20 / item.colors.length;
-      item.colors.forEach((c, index) => {
-        sprite.rect(0, -10 + index * partHeight, 20, partHeight).fill(c);
-      });
-    }
-    sprite.position.set(item.x(), item.y());
-    if (this.app) {
-      this.app.stage.addChild(sprite);
-    }
-    this.itemSpriteMap.set(item, sprite);
-
-    // Add it to the stage to render
-
     this.items.update((items) => [...items, item]);
   }
 
@@ -653,7 +561,7 @@ export class StreamVizComponent {
   save(name: string) {
     const state = this.serializeState();
     this.stored.update((s) => s.filter((s) => s.name !== name));
-    
+
     const newItem = {
       name,
       ...state,
@@ -854,11 +762,11 @@ export class StreamVizComponent {
   }
 
   reset() {
-    this.items().forEach((item) => {
-      const sprite = this.itemSpriteMap.get(item);
-      this.app?.stage.removeChild(sprite);
-      this.itemSpriteMap.delete(item);
-    });
+    // this.items().forEach((item) => {
+    //   const sprite = this.itemSpriteMap.get(item);
+    //   this.app?.stage.removeChild(sprite);
+    //   this.itemSpriteMap.delete(item);
+    // });
     this.items.set([]);
     this.counters.update(() => []);
     this.emitters().forEach((e) => {

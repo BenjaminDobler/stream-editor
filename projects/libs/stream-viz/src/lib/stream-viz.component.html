@@ -59,58 +59,14 @@
     <div #stage style="display: flex; position: relative">
       <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
-      <div style="position: absolute; left: 0; top: 0" #pixi></div>
+      <bubble-renderer
+        [backgroundColor]="backgroundColor"
+        (checkCollision)="checkCollision()"
+        [items]="items()"
+      ></bubble-renderer>
 
       @for (emitter of emitters(); track emitter.id) {
-
         <emitter [emitter]="emitter" [size]="rootEmitterStyles()"></emitter>
-
-        <!-- @if (emitter.isStartEmitter) {
-          <div
-            (contextmenu)="onEmitterContextMenu($event, emitter)"
-            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-            [style.width]="emitter.width + 'px'"
-            style="color: #fff"
-            class="emitter start"
-            [style.width]="eStyle.width + 'px'"
-            [style.height]="eStyle.height + 'px'"
-            (click)="emitter.activate()"
-          >
-            <div style="transform: translateY(-50%); width: 100%; height: 100%">
-              <div class="type" [style.lineHeight]="eStyle.height + 'px'">
-                {{ emitter.type }}
-                @if (emitter.type === "number") {
-                  <input
-                    [(ngModel)]="emitter.property1"
-                    style="field-sizing: content; background: transparent; border: none"
-                  />
-                }
-              </div>
-              <div class="color-indicator" [style.background]="emitter.color"></div>
-            </div>
-          </div>
-        } @else {
-          <div
-            (contextmenu)="onEmitterContextMenu($event, emitter)"
-            [style.transform]="'translate(' + emitter.x() + 'px,' + emitter.y() + 'px)'"
-            [style.width]="emitter.width + 'px'"
-            style="color: #fff"
-            class="emitter"
-            (click)="emitter.activate()"
-          >
-            <div style="transform: translateY(-50%); width: 100%; height: 100%" [style.background]="emitter.color">
-              @if (emitter.isStartEmitter) {
-                {{ emitter.type }}
-              }
-              @if (emitter.type === "interval") {
-                <input
-                  [(ngModel)]="emitter.property1"
-                  style="field-sizing: content; background: transparent; border: none"
-                />
-              }
-            </div>
-          </div>
-        } -->
       }
 
       <div style="position: relative">
@@ -127,7 +83,6 @@
             [style.transform]="'translate(' + counter.x() + 'px,' + counter.y() + 'px)'"
           >
             {{ counter.count() }}
-            <!-- x: {{ counter.x() }} y: {{ counter.y() }} -->
           </div>
         }
 
@@ -171,19 +126,14 @@
         </div>
 
         @if (selectedOperator) {
+          @let showEditor = ["filter", "map", "scan", "distinctUntilChanged"].includes(selectedOperator.type);
           <as-split-area>
             @if (selectedOperator.type === "throttle") {
               <div style="width: 100%">
                 <div>Throttle Options</div>
-
                 <input [(ngModel)]="selectedOperator.height" (ngModelChange)="updateOperatorInputs()" />
               </div>
-            } @else if (
-              selectedOperator.type === "filter" ||
-              selectedOperator.type === "map" ||
-              selectedOperator.type === "scan" ||
-              selectedOperator.type === "distinctUntilChanged"
-            ) {
+            } @else if (showEditor) {
               <div class="option-box" style="width: 100%; height: 100%">
                 <div class="header">Filter function</div>
                 <ng-monaco
@@ -255,16 +205,6 @@
     <p-button label="Cancel" severity="secondary" (onClick)="restoreVisible = false" />
   </div>
 </p-dialog>
-
-<!-- <p-dialog header="Import" [modal]="true" [(visible)]="importVisible" [style]="{ width: '25rem' }">
-  <div class="flex align-items-center gap-3 mb-3">
-    <textarea #importtext></textarea>
-  </div>
-  <div class="flex justify-content-end gap-2">
-    <p-button label="Cancel" severity="secondary" (onClick)="importVisible = false" />
-    <p-button label="Import" (onClick)="importStream(importtext.value); importVisible = false" />
-  </div>
-</p-dialog> -->
 
 <p-dialog header="Export Streams" [modal]="true" [(visible)]="exportVisible" [style]="{ width: '25rem' }">
   <div class="flex gap-3 mb-3" style="flex-direction: column">

@@ -1,7 +1,5 @@
 <svg width="1400" height="900" style="position: absolute; left: 0; top: 0">
-  
   <defs>
-    
     <marker
       id="arrow"
       viewBox="0 0 20 20"
@@ -19,7 +17,6 @@
     <marker id="circle" markerWidth="12" markerHeight="12" refX="13" refY="6" markerUnits="strokeWidth">
       <circle cx="6" cy="6" r="4" stroke="context-stroke" fill="#1E1E1E" />
     </marker>
-
   </defs>
   @for (connection of connections(); track connection.id) {
     <line
@@ -30,7 +27,7 @@
       stroke="white"
       stroke-width="1"
       [attr.stroke-dasharray]="connection.dash"
-      [attr.marker-start]="showStartMarker()?'url(#circle)':'none'"
+      [attr.marker-start]="showStartMarker() ? 'url(#circle)' : 'none'"
       marker-end="url(#arrow)"
     />
   }
