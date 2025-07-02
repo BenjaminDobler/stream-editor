@@ -6,7 +6,7 @@
         <div
           class="operator"
           style="width: 105px; height: 30px; position: relative"
-          (mousedown)="addOperator(operator, $event)"
+          (pointerdown)="addOperator(operator, $event)"
         >
           {{ operator.name }}
         </div>
@@ -14,6 +14,8 @@
     </div>
   </div>
 
+  <!-- {{ scale() }}
+  <input type="range" min="0.2" max="2" step="0.01" [(ngModel)]="scale" /> -->
   <div class="sidebar-section">
     <div class="sidebar-header">Emitter</div>
 
@@ -56,7 +58,7 @@
     <div class="custom-shade-gutter-icon"></div>
   </div>
   <as-split-area [size]="100">
-    <div #stage style="display: flex; position: relative">
+    <div #stage style="display: flex; position: relative" >
       <connections [showStartMarker]="true" [connections]="noneTargetConnections()"></connections>
 
       <bubble-renderer
@@ -107,6 +109,7 @@
         @for (operator of operators(); track operator.id) {
           <operator
             [operator]="operator"
+            [viewportScale]="scale()"
             (click)="selectOperator(operator)"
             (contextmenu)="onObstacleContextMenu($event, operator)"
             [class.isConsumer]="operator.type === 'consumer'"

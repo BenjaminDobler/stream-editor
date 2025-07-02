@@ -1,4 +1,4 @@
-import { Directive, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, inject, input, Input, Output } from '@angular/core';
 import { makeDraggable } from './drag.util';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -30,6 +30,8 @@ export class DraggerDirective {
   @Output()
   heightUpdated: EventEmitter<number> = new EventEmitter<number>();
 
+  viewportScale = input<number>(1);
+
   onDestroy$ = new Subject<void>();
 
   public resizeOffset = 5;
@@ -37,7 +39,6 @@ export class DraggerDirective {
   ngAfterViewInit() {
     const itemElement = this.el?.nativeElement;
     const parentElement = itemElement.parentElement;
-    console.log('DraggerDirective', itemElement, parentElement);
 
     let parentRect = parentElement.getBoundingClientRect();
     let itemRect = itemElement.getBoundingClientRect();
@@ -52,6 +53,9 @@ export class DraggerDirective {
     };
 
     const pos = (x: number, y: number) => {
+      x = x / this.viewportScale();
+      y = y / this.viewportScale();
+      console.log(this.viewportScale());
       if (this.positioning === 'absolute') {
         itemElement.style.left = `${x}px`;
         itemElement.style.top = `${y}px`;

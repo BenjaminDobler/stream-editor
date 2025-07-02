@@ -29,7 +29,7 @@ import { EmitterDescription, OperatorDescription, StreamVizService } from './ser
 import { TakeUntilOperator } from './model/operators/takeuntil.operator';
 import { TakeUntilOperatorTarget } from './model/operators/takeuntil-target.operator';
 import { SwitchMapToOperator } from './model/operators/switchMapTo.operator';
-import { fromEvent, Subject, take, takeUntil } from 'rxjs';
+import { fromEvent, Subject, take, takeUntil, tap } from 'rxjs';
 import { SwitchMapToOperatorTarget } from './model/operators/switchMapToTarget.operator';
 import { SignalObject } from './model/types';
 import { Tap } from './model/tap';
@@ -134,6 +134,8 @@ export class StreamVizComponent {
   restoreVisible = false;
   importVisible = false;
   exportVisible = false;
+
+  scale = signal(1);
 
   constructor(private injector: EnvironmentInjector) {
     console.log('$$ stream viz constructor');
@@ -380,7 +382,7 @@ export class StreamVizComponent {
     this.taps.update((x) => [...x, new Tap()]);
   }
 
-  addOperator(operatorDescription: OperatorDescription, event?: MouseEvent) {
+  addOperator(operatorDescription: OperatorDescription, event?: any) {
     const o = new operatorDescription.implementation(this, this.injector) as Operator;
     // TODO: unsubscribe when deleted
     o.emit$.pipe(takeUntil(this.onDestroy$)).subscribe((item: Item) => {
@@ -388,19 +390,31 @@ export class StreamVizComponent {
     });
 
     const bounds = this.el.nativeElement.getBoundingClientRect();
-
     if (event) {
       o.x.update(() => event.clientX - bounds.left);
       o.y.update(() => event.clientY - bounds.top);
       o.height.update(() => 50);
 
-      const mousemove$ = fromEvent<MouseEvent>(document, 'mousemove');
-      const mouseup$ = fromEvent<MouseEvent>(document, 'mouseup');
+      const mousemove$ = fromEvent<PointerEvent>(document, 'pointermove');
+      const mouseup$ = fromEvent<PointerEvent>(document, 'pointerup');
 
-      mousemove$.pipe(takeUntil(mouseup$.pipe(take(1)))).subscribe((me) => {
-        o.x.update(() => me.clientX - bounds.left);
-        o.y.update(() => me.clientY - bounds.top);
-      });
+      o.dragging.set(true);
+
+      mousemove$
+        .pipe(
+          takeUntil(
+            mouseup$.pipe(
+              take(1),
+              tap(() => {
+                o.dragging.set(false);
+              }),
+            ),
+          ),
+        )
+        .subscribe((me) => {
+          o.x.set(me.clientX - bounds.left);
+          o.y.set(me.clientY - bounds.top);
+        });
     } else {
       o.x.update(() => 200);
     }
@@ -489,7 +503,7 @@ export class StreamVizComponent {
   getOperatorLines() {
     const startEmitters = this.emitters().filter((e) => e.isStartEmitter);
 
-    this.emitters().forEach((e) => e.hot.update(() => false));
+    this.emitters().forEach((e) => e.hot.set(false));
 
     startEmitters.forEach((emitterToCheck) => {
       let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
@@ -512,8 +526,8 @@ export class StreamVizComponent {
           (!untilTriggered && hasActiveSwitchMapTarget) ||
           (operators.length > 0 && operators[operators.length - 1].type === 'consumer');
       }
-      emitterToCheck.isHot.update((s) => isHot);
-      emitters.forEach((e) => e.hot.update(() => isHot));
+      emitterToCheck.isHot.set(isHot);
+      emitters.forEach((e) => e.hot.set(isHot));
     });
   }
 
@@ -867,20 +881,16 @@ export class StreamVizComponent {
   }
 
   async importStreams() {
-    console.log('import streams');
     const handle = await showOpenFilePicker({
       types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
     });
     const fileHandle = handle[0];
     const file = await fileHandle.getFile();
     const text = await file.text();
-    console.log('imported text', text);
 
     const toImport = JSON.parse(text);
-    console.log('imported json', toImport);
 
     toImport.forEach((streamToImport: any) => {
-      console.log('import', streamToImport);
       const exists = this.stored().find((s) => s.name === streamToImport.name);
       if (!exists) {
         this.stored.update((stored) => [...stored, streamToImport]);

@@ -18,6 +18,8 @@ export abstract class Operator {
     this.value1$.next(value);
   }
 
+  dragging = signal<boolean>(false);
+
   value1$ = new BehaviorSubject<number>(this._value1);
 
   public type = 'unknown';
@@ -30,16 +32,16 @@ export abstract class Operator {
   height: WritableSignal<number> = signal(200);
 
   setHeight(value: number) {
-    this.height.update(() => value);
+    this.height.set(value);
   }
 
   setWidth(value: number) {
-    this.width.update(() => value);
+    this.width.set(value);
   }
 
   setPos(data: { x: number; y: number }) {
-    this.x.update(() => data.x);
-    this.y.update(() => data.y);
+    this.x.set(data.x);
+    this.y.set(data.y);
   }
 
   items: Subject<any> = new Subject<any>();
@@ -56,7 +58,7 @@ export abstract class Operator {
 
   abstract reset(): void;
 
-  abstract getCode():string;
+  abstract getCode(): string;
   //input emitters
   abstract setInputEmitters(e: Emitter[]): void;
 

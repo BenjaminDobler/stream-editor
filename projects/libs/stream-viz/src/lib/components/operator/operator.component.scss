@@ -3,6 +3,7 @@
   position: absolute;
   left: 0;
   top: 0;
+  touch-action: none;
 
   background: var(--operator-bg);
   border-radius: 6px;
@@ -14,6 +15,7 @@
   align-items: center;
   align-content: center;
   justify-content: center;
+  z-index: 2000;
 
   .input {
     field-sizing: content;

@@ -28,8 +28,8 @@ export class CombineLatestOperator extends Operator {
     if (e.length > 0 && !this.combineEmitter) {
       const emitter = new ObservableEmitter();
       emitter.belongsToOperator = this;
-      emitter.x.update(() => this.x() + this.width() + 1);
-      emitter.y.update(() => this.y() + this.height() / 2 - 10);
+      emitter.x.set(this.x() + this.width() + 1);
+      emitter.y.set(this.y() + this.height() / 2 - 10);
       emitter.width = 5;
       this.app.addEmitter(emitter);
       this.combineEmitter = emitter;
@@ -44,8 +44,8 @@ export class CombineLatestOperator extends Operator {
     }
 
     if (this.combineEmitter) {
-      this.combineEmitter.x.update(() => this.x() + this.width() + 5);
-      this.combineEmitter.y.update(() => this.y() + this.height() / 2);
+      this.combineEmitter.x.set(this.x() + this.width() + 5);
+      this.combineEmitter.y.set(this.y() + this.height() / 2);
     }
 
     let hasNewEmitters = false;

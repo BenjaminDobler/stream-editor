@@ -15,6 +15,7 @@ bubble-renderer {
   position: absolute;
   top: 0;
   left: 0;
+  touch-action: none;
   background: var(--operator-bg);
   border-radius: 6px;
   overflow: hidden;
@@ -64,6 +65,7 @@ bubble-renderer {
 }
 .counter {
   position: absolute;
+  touch-action: none;
   top: 0;
   left: 0;
   background: rgba(0, 0, 0, 0.2);

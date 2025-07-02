@@ -1,10 +1,10 @@
 import { fromEvent, last, map, startWith, switchMap, takeUntil } from 'rxjs';
 
-const mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
-const mouseUp$ = fromEvent<MouseEvent>(document, 'mouseup');
+const mouseMove$ = fromEvent<PointerEvent>(document, 'pointermove');
+const mouseUp$ = fromEvent<PointerEvent>(document, 'pointerup');
 
 export function makeDraggable(element: HTMLElement) {
-  const mouseDown$ = fromEvent<MouseEvent>(element, 'mousedown');
+  const mouseDown$ = fromEvent<PointerEvent>(element, 'pointerdown');
 
   const dragStart$ = mouseDown$;
   const dragMove$ = dragStart$.pipe(
@@ -21,13 +21,6 @@ export function makeDraggable(element: HTMLElement) {
       ),
     ),
   );
-
-  // dragMove$.subscribe((move) => {
-  //   const offsetX = move.originalEvent.x - move.startOffsetX;
-  //   const offsetY = move.originalEvent.y - move.startOffsetY;
-  //   element.style.left = offsetX + 'px';
-  //   element.style.top = offsetY + 'px';
-  // });
 
   const dragEnd$ = dragStart$.pipe(
     switchMap((start) =>

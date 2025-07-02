@@ -36,8 +36,8 @@ export class DebounceOperator extends Operator {
         emitter.valueType = e.valueType;
 
         const source = new Subject();
-        emitter.x.update(() => this.x() + this.width() + 2);
-        emitter.y.update(() => e.y());
+        emitter.x.set(this.x() + this.width() + 2);
+        emitter.y.set(e.y());
         emitter.width = 10;
         this.app.addEmitter(emitter);
         this.inputEmitterObservables[e.id] = {
@@ -65,8 +65,8 @@ export class DebounceOperator extends Operator {
     Object.keys(this.inputEmitterObservables).forEach((k) => {
       const inp = this.inputEmitterObservables[k];
       if (inp.emitter) {
-        inp.emitter.x.update(() => this.x() + this.width() + 2);
-        inp.emitter.y.update(() => inp.sourceEmitter.y());
+        inp.emitter.x.set(this.x() + this.width() + 2);
+        inp.emitter.y.set(inp.sourceEmitter.y());
       }
     });
   }

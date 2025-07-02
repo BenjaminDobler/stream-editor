@@ -1,23 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, input, signal } from '@angular/core';
 import { DraggerDirective } from '@richapps/rx-drag';
 import { Operator } from '../../model/operators/base.operator';
 import { FormsModule } from '@angular/forms';
-import { ContextMenuModule } from 'primeng/contextmenu';
 
 @Component({
-    selector: 'operator',
-    imports: [CommonModule, FormsModule],
-    templateUrl: './operator.component.html',
-    styleUrl: './operator.component.scss',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    hostDirectives: [
-        {
-            directive: DraggerDirective,
-            outputs: ['heightUpdated', 'widthUpdated', 'positionUpdated'],
-            inputs: ['positioning'],
-        },
-    ]
+  selector: 'operator',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './operator.component.html',
+  styleUrl: './operator.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [
+    {
+      directive: DraggerDirective,
+      outputs: ['heightUpdated', 'widthUpdated', 'positionUpdated'],
+      inputs: ['positioning', 'viewportScale'],
+    },
+  ],
+  host: {
+    '[style.zIndex]': 'operator()?.dragging()?2000:1',
+  },
 })
 export class OperatorComponent {
   @HostBinding('style.width') get width() {
@@ -36,6 +38,7 @@ export class OperatorComponent {
   @HostBinding('style.transform') get transform() {
     return 'translate(' + this.operator()?.x() + 'px,' + this.operator()?.y() + 'px)';
   }
+
 
   operator = input.required<Operator>();
 
