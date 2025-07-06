@@ -3,8 +3,8 @@
 The idea here is to have a drag & drop builder to construct new streams out of existing streams.
 Think of an editor for RX streams.
 
-The monaco code edior is integrated to edit expressions for operators like filter and map.
-The connections are drawn via SVG and the bubbles, which indicate events are drawn with pixi.js.
+The monaco code editor is integrated to edit expressions for operators like filter and map.
+The connections are drawn via SVG and the bubbles, which indicate events, are drawn with pixi.js.
 
 ![Streams](https://github.com/BenjaminDobler/stream-editor/blob/main/documentation/stream.png)
 
