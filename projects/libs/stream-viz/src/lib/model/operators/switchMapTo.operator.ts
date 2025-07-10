@@ -7,7 +7,7 @@ import { SwitchMapToOperatorTarget } from './switchMapToTarget.operator';
 import { signal, WritableSignal } from '@angular/core';
 
 export class SwitchMapToOperator extends Operator {
-  public override type: string = 'switchMapTo';
+  public override type = 'switchMapTo';
   public triggered = false;
   public targetOperator?: SwitchMapToOperatorTarget;
   override width: WritableSignal<number> = signal(126);

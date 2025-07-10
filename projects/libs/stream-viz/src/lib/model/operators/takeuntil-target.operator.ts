@@ -11,7 +11,7 @@ export class TakeUntilOperatorTarget extends Operator {
   reset() {}
   override width: WritableSignal<number> = signal(20);
 
-  public override type: string = 'takeuntiltarget';
+  public override type = 'takeuntiltarget';
   public sourceOperator?: TakeUntilOperator;
 
   override init(): void {

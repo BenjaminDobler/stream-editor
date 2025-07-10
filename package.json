@@ -9,7 +9,8 @@
     "rx-drag:build": "ng build rx-drag && node --import=tsx ./scripts/link.ts --project=rx-drag",
     "start": "ng serve stream-viz-demo",
     "stream-viz:build": "ng build stream-viz && node --import=tsx ./scripts/link.ts --project=stream-viz",
-    "build:prod": "ng build stream-viz-demo --configuration production --base-href=/stream-editor/"
+    "build:prod": "ng build stream-viz-demo --configuration production --base-href=/stream-editor/",
+    "lint": "ng lint"
   },
   "dependencies": {
     "@angular/animations": "^19.2.8",
@@ -40,10 +41,12 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^19.2.9",
-    "@types/wicg-file-system-access": "^2023.10.6",
     "@angular/cli": "^19.2.9",
     "@angular/compiler-cli": "^19.2.8",
     "@types/jasmine": "~5.1.0",
+    "@types/wicg-file-system-access": "^2023.10.6",
+    "angular-eslint": "20.1.1",
+    "eslint": "^9.29.0",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
@@ -52,6 +55,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^19.2.2",
     "tsx": "^4.19.2",
-    "typescript": "~5.5.2"
+    "typescript": "~5.5.2",
+    "typescript-eslint": "8.34.1"
   }
 }

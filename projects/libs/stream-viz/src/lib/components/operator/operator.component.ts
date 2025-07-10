@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostBinding, HostListener, inject, input, signal, AfterViewInit } from '@angular/core';
 import { DraggerDirective } from '@richapps/rx-drag';
 import { Operator } from '../../model/operators/base.operator';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,7 @@ import { FormsModule } from '@angular/forms';
     '[style.zIndex]': 'operator()?.dragging()?2000:1',
   },
 })
-export class OperatorComponent {
+export class OperatorComponent implements AfterViewInit {
   @HostBinding('style.width') get width() {
     return this.operator()?.width() + 'px';
   }

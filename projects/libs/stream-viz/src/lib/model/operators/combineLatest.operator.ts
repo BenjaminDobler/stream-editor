@@ -49,7 +49,7 @@ export class CombineLatestOperator extends Operator {
     }
 
     let hasNewEmitters = false;
-    let combinedEmitterTypes: string[] = [];
+    const combinedEmitterTypes: string[] = [];
     e.forEach((e) => {
       combinedEmitterTypes.push(e.valueType);
 

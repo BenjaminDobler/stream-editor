@@ -8,8 +8,8 @@ export function drawArrow(
   color: string,
 ) {
   //variables to be used when creating the arrow
-  var headlen = 10;
-  var angle = Math.atan2(toy - fromy, tox - fromx);
+  const headlen = 10;
+  const angle = Math.atan2(toy - fromy, tox - fromx);
 
   ctx.save();
   ctx.strokeStyle = color;

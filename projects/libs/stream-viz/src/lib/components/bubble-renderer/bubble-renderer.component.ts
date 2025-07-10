@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input, output, AfterViewInit, OnDestroy } from '@angular/core';
 import * as PIXI from 'pixi.js';
 import { Item } from '../../model/item';
 
@@ -16,14 +16,14 @@ import { Item } from '../../model/item';
   styleUrl: './bubble-renderer.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BubbleRendererComponent {
+export class BubbleRendererComponent implements AfterViewInit, OnDestroy {
   backgroundColor = input<string>('#000000');
   checkCollision = output<void>();
   items = input<Item[]>([]);
 
   private app?: PIXI.Application;
   private el = inject(ElementRef);
-  private itemSpriteMap: Map<Item, PIXI.Graphics> = new Map();
+  private itemSpriteMap = new Map<Item, PIXI.Graphics>();
 
   constructor() {
     effect(() => {

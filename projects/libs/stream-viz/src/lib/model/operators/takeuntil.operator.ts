@@ -6,7 +6,7 @@ import { ObservableEmitter } from '../emitter/observable.emitter';
 import { signal, WritableSignal } from '@angular/core';
 
 export class TakeUntilOperator extends Operator {
-  public override type: string = 'takeuntil';
+  public override type = 'takeuntil';
   public triggered = false;
   public targetOperator?: TakeUntilOperatorTarget;
   override width: WritableSignal<number> = signal(97);

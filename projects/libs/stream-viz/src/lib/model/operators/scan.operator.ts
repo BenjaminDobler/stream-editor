@@ -51,8 +51,8 @@ export class ScanOperator extends Operator {
             map((filterFunctionString) => {
               let filterFunction: any = () => true;
               try {
-                var body = 'function(acc, curr, index ){ return ' + filterFunctionString + ' }';
-                var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
+                const body = 'function(acc, curr, index ){ return ' + filterFunctionString + ' }';
+                const wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
                 filterFunction = new Function(wrap(body));
               } catch (e) {
                 // console.log('error creating filter function');

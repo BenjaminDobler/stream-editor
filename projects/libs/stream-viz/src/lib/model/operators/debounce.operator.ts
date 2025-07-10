@@ -1,4 +1,4 @@
-import { BehaviorSubject, debounceTime, Subject, switchMap, throttleTime } from 'rxjs';
+import { debounceTime, Subject, switchMap } from 'rxjs';
 import { Emitter } from '../emitter/emitter';
 import { Operator } from './base.operator';
 import { ObservableEmitter } from '../emitter/observable.emitter';

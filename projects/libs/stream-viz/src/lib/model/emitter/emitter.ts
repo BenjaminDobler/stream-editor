@@ -18,9 +18,9 @@ export abstract class Emitter {
   color = '#000000'; // getRandomColor();
   isStartEmitter?: boolean;
   public id: number = IDGenerator.getID();
-  public type: string = '';
+  public type = '';
 
-  public valueType: string = 'unknown';
+  public valueType = 'unknown';
 
   hot = signal(false);
   isHot: WritableSignal<boolean> = signal(false);

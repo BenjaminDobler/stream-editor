@@ -32,7 +32,7 @@ export interface EmitterDescription {
 }
 
 export class StreamVizService {
-  public types: string = '';
+  public types = '';
   operators: WritableSignal<OperatorDescription[]> = signal([
     { implementation: CombineLatestOperator, name: 'combineLatest' },
     { implementation: MergeOperator, name: 'merge' },

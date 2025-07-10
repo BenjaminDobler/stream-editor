@@ -6,7 +6,7 @@ import { TakeUntilOperator } from './takeuntil.operator';
 export class SwitchMapToOperatorTarget extends Operator {
   override width: WritableSignal<number> = signal(20);
 
-  public override type: string = 'switchMapToTarget';
+  public override type = 'switchMapToTarget';
   public sourceOperator?: TakeUntilOperator;
 
   public isActive = false;

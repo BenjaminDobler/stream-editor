@@ -2,7 +2,7 @@ import { BehaviorSubject, combineLatest, Subject } from 'rxjs';
 import { Emitter } from '../emitter/emitter';
 import { toObservable } from '@angular/core/rxjs-interop';
 
-import { effect, Injector, runInInjectionContext, signal, WritableSignal } from '@angular/core';
+import { Injector, runInInjectionContext, signal, WritableSignal } from '@angular/core';
 import { IDGenerator } from '../../it.generator';
 import { StreamVizComponent } from '../../stream-viz.component';
 

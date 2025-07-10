@@ -12,6 +12,8 @@ import {
   viewChild,
   ViewChild,
   WritableSignal,
+  AfterViewInit,
+  OnDestroy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Item } from './model/item';
@@ -36,7 +38,6 @@ import { Tap } from './model/tap';
 import { ConnectionsComponent } from './components/connections/connections.component';
 import { OperatorComponent } from './components/operator/operator.component';
 import { JsonPipe } from '@angular/common';
-import { SplitterComponent } from './components/splitter/splitter.component';
 import { NgMonacoComponent } from '@richapps/ng-monaco';
 import { AngularSplitModule } from 'angular-split';
 import { angleRadians, distanceBetweenPoints, pointOnCircle } from './util/geometry';
@@ -70,7 +71,7 @@ import { BubbleRendererComponent } from './components/bubble-renderer/bubble-ren
   styleUrl: './stream-viz.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StreamVizComponent {
+export class StreamVizComponent implements AfterViewInit, OnDestroy {
   stateBeforeDestroy = output<any>();
   rootEmitterStyles = input({ width: 120, height: 30 });
 
@@ -122,11 +123,11 @@ export class StreamVizComponent {
   rightClickOperator?: Operator;
   rightClickEmitterDescription?: EmitterDescription;
 
-  backgroundColor: string = '#00ff00';
+  backgroundColor = '#00ff00';
 
   editorOptions = { theme: 'vs-dark', language: 'typescript' };
 
-  generatedCode: string = '';
+  generatedCode = '';
 
   code = '';
 
@@ -455,12 +456,12 @@ export class StreamVizComponent {
   }
 
   resetLine(emitterToCheck: Emitter) {
-    let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
+    const { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
 
     operators.forEach((o) => {
       o.reset();
     });
-    let takeUntilOperators: TakeUntilOperator[] = operators.filter(
+    const takeUntilOperators: TakeUntilOperator[] = operators.filter(
       (o: any) => o.type === 'takeuntil',
     ) as TakeUntilOperator[];
 
@@ -470,7 +471,7 @@ export class StreamVizComponent {
   }
 
   getLineFromEmitter(emitterToCheck: Emitter, followTargetSource = true) {
-    let emittersInLine = [];
+    const emittersInLine = [];
     let currentEmitter: Emitter | undefined = emitterToCheck;
     const operators = [];
     while (currentEmitter && currentEmitter.operator) {
@@ -507,16 +508,16 @@ export class StreamVizComponent {
 
     startEmitters.forEach((emitterToCheck) => {
       let { operators, emitters } = this.getLineFromEmitter(emitterToCheck);
-      let untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeuntil');
-      // let hasUntilTriggerTarget = operators.find((o: any) => o.type === 'takeuntiltarget');
-      let hasSwitchMapTarget = operators.find((o: any) => o.type === 'switchMapToTarget') as SwitchMapToOperatorTarget;
-      let completedOperators = !!operators.find((o) => o.completed());
+      const untilTriggered = operators.find((o: any) => o.triggered && o.type === 'takeuntil');
+      const hasSwitchMapTarget = operators.find(
+        (o: any) => o.type === 'switchMapToTarget',
+      ) as SwitchMapToOperatorTarget;
+      const completedOperators = !!operators.find((o) => o.completed());
       if (emitters.length === 0) {
         emitters = [emitterToCheck];
       }
 
       const hasActiveSwitchMapTarget = hasSwitchMapTarget && hasSwitchMapTarget.isActive;
-      // const hasActiveUntilTriggerTarget = hasUntilTriggerTarget && hasUntilTriggerTarget.isActive;
 
       let isHot = false;
       if (completedOperators) {
@@ -531,7 +532,7 @@ export class StreamVizComponent {
     });
   }
 
-  selectedOperatorDataType: string = '';
+  selectedOperatorDataType = '';
   selectOperator(operator: Operator) {
     if (this.selectedOperator === operator) {
       this.selectedOperator = undefined;
@@ -605,7 +606,7 @@ export class StreamVizComponent {
         operators: line.operators
           .filter((o) => !['switchMapToTarget', 'consumer', 'takeuntiltarget'].includes(o.type))
           .map((o) => {
-            const operatorObj: any = {
+            const operatorObj: { type: string; id: number; property1: number | string } = {
               type: o.type,
               id: o.id,
               property1: o.value1,
@@ -615,7 +616,9 @@ export class StreamVizComponent {
               if (targetOperator) {
                 const targetLine = this.getLineWithOperator(targetOperator);
                 const startStreamID = targetLine?.emitters[0].id;
-                operatorObj.property1 = startStreamID;
+                if (startStreamID) {
+                  operatorObj.property1 = startStreamID;
+                }
               }
             }
 
@@ -624,7 +627,9 @@ export class StreamVizComponent {
               if (targetOperator) {
                 const targetLine = this.getLineWithOperator(targetOperator);
                 const startStreamID = targetLine?.emitters[0].id;
-                operatorObj.property1 = startStreamID;
+                if (startStreamID) {
+                  operatorObj.property1 = startStreamID;
+                }
               }
             }
 
@@ -692,8 +697,6 @@ export class StreamVizComponent {
     this.currentStoredItem = storedData;
     this.reset();
     const stored = storedData.content;
-
-    console.log('stored', stored);
     stored.emitters.forEach((e: any) => {
       const emitterDescription = this.streamVizService()
         .emitters()
@@ -840,7 +843,6 @@ export class StreamVizComponent {
         code = `const stream${id}$ = source${id}.pipe(\n`;
         lineOperators.forEach((o, index) => {
           const isLastLine = lineOperators.length - 1 === index;
-          const c = o.getCode();
           code += '    ' + o.getCode() + (isLastLine ? '\n' : ',\n');
         });
         code += ');';
@@ -854,22 +856,14 @@ export class StreamVizComponent {
     this.generatedCode = code;
   }
 
-  ngOnInit() {
-    console.log('$$ on init stream viz');
-  }
-
   ngOnDestroy() {
     const state = this.serializeState();
     this.stateBeforeDestroy.emit(state);
     this.onDestroy$.next();
     this.onDestroy$.complete();
-    console.log('$$ destroying stream viz');
   }
 
   async exportStreams() {
-    console.log('export streams');
-    console.log(this.streamsToExport);
-
     const handle = await showSaveFilePicker({
       suggestedName: 'twinfx_streams.json',
       types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }],
@@ -894,8 +888,6 @@ export class StreamVizComponent {
       const exists = this.stored().find((s) => s.name === streamToImport.name);
       if (!exists) {
         this.stored.update((stored) => [...stored, streamToImport]);
-      } else {
-        console.log('already exists', streamToImport.name);
       }
     });
 

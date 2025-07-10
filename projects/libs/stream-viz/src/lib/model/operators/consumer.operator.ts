@@ -27,7 +27,7 @@ export class ConsumerOperator extends Operator {
 
   //input emitters
   setInputEmitters(e: Emitter[]) {
-    let hasNewEmitters = false;
+    const hasNewEmitters = false;
 
     const toRemove = Object.keys(this.inputEmitterObservables).filter((k) => !e.find((em) => em.id === +k));
 

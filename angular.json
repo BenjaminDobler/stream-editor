@@ -109,6 +109,13 @@
             "tsConfig": "projects/libs/stream-viz/tsconfig.spec.json",
             "polyfills": ["zone.js", "zone.js/testing"]
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["projects/libs/stream-viz/**/*.ts", "projects/libs/stream-viz/**/*.html"],
+            "eslintConfig": "projects/libs/stream-viz/eslint.config.js"
+          }
         }
       }
     },

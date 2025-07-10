@@ -1,4 +1,4 @@
-import { BehaviorSubject, filter, map, Subject, switchMap, throttleTime } from 'rxjs';
+import { filter, map, Subject, switchMap } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
@@ -51,8 +51,8 @@ export class FilterOperator extends Operator {
             map((filterFunctionString) => {
               let filterFunction: any = () => true;
               try {
-                var body = 'function( input ){ return ' + filterFunctionString + ' }';
-                var wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
+                const body = 'function( input ){ return ' + filterFunctionString + ' }';
+                const wrap = (s: any) => '{ return ' + body + ' };'; //return the block having function expression
                 filterFunction = new Function(wrap(body));
               } catch (e) {
                 // console.log('error creating filter function');

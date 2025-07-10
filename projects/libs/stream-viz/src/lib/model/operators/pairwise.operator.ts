@@ -1,4 +1,4 @@
-import { BehaviorSubject, pairwise, Subject, switchMap, throttleTime } from 'rxjs';
+import { pairwise, Subject, switchMap } from 'rxjs';
 import { Operator } from './base.operator';
 import { Emitter } from '../emitter/emitter';
 import { ObservableEmitter } from '../emitter/observable.emitter';
