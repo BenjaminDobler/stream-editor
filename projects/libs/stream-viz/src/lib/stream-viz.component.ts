@@ -24,7 +24,7 @@ import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
 import { Operator } from './model/operators/base.operator';
 import { Emitter } from './model/emitter/emitter';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { DialogModule } from 'primeng/dialog';
 
 import { EmitterDescription, OperatorDescription, StreamVizService } from './services/stream-viz.service';
@@ -53,7 +53,7 @@ import { BubbleRendererComponent } from './components/bubble-renderer/bubble-ren
     FormsModule,
     DraggerDirective,
     ContextMenuModule,
-    DropdownModule,
+    SelectModule,
     ConnectionsComponent,
     OperatorComponent,
     NgMonacoComponent,
